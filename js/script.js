@@ -1,7 +1,11 @@
 const GRID_SIZE = 20;
 const CELL_SIZE = 20;
 let score = 0;
-const GAME_SPEED = 150; // milliseconds
+const GAME_SPEED = 150; // milliseconds (default speed)
+const MIN_SPEED = 5;   // fastest speed (lower number = faster)
+const MAX_SPEED = 300;  // slowest speed (higher number = slower)
+const SPEED_STEP = 5;  // speed change increment
+let currentSpeed = GAME_SPEED;
 const INITIAL_POSITION = { x: 10, y: 10 };
 const DIRECTIONS = {
   UP: "up",
@@ -33,6 +37,31 @@ function toggleTheme() {
   themeToggle.checked = isDarkMode;
 
   localStorage.setItem("snakeTheme", theme);
+}
+
+function increaseSpeed() {
+  if (currentSpeed > MIN_SPEED) {
+    currentSpeed -= SPEED_STEP;
+    if (currentSpeed < MIN_SPEED) currentSpeed = MIN_SPEED;
+    updateGameSpeed();
+    console.log(`Speed increased! Current speed: ${currentSpeed}ms`);
+  }
+}
+
+function decreaseSpeed() {
+  if (currentSpeed < MAX_SPEED) {
+    currentSpeed += SPEED_STEP;
+    if (currentSpeed > MAX_SPEED) currentSpeed = MAX_SPEED;
+    updateGameSpeed();
+    console.log(`Speed decreased! Current speed: ${currentSpeed}ms`);
+  }
+}
+
+function updateGameSpeed() {
+  if (gameRunning && !gamePaused) {
+    clearInterval(gameInterval);
+    gameInterval = setInterval(gameLoop, currentSpeed);
+  }
 }
 
 function initializeGrid() {
@@ -195,6 +224,12 @@ function moveSnake() {
   if (head.x === food.x && head.y === food.y) {
     score += 10;
     generateFood();
+    
+    // Check for winning condition: snake covers all grid except 1 cell (for food)
+    if (snake.length === GRID_SIZE * GRID_SIZE - 1) {
+      endGame(true); // Pass true to indicate winning
+      return;
+    }
   } else {
     snake.pop();
   }
@@ -225,6 +260,7 @@ function startGame(isRestart = false) {
   direction = DIRECTIONS.RIGHT;
   nextDirection = DIRECTIONS.RIGHT;
   score = 0;
+  currentSpeed = GAME_SPEED; // Reset speed to default
   gameRunning = true;
   gamePaused = false;
 
@@ -238,7 +274,7 @@ function startGame(isRestart = false) {
   autopilot.reset();
   lawnmowerAutopilot.reset();
 
-  gameInterval = setInterval(gameLoop, GAME_SPEED);
+  gameInterval = setInterval(gameLoop, currentSpeed);
 
   updateDisplay();
 }
@@ -266,12 +302,12 @@ function pauseGame() {
 function resumeGame() {
   if (!gameRunning || !gamePaused) return;
 
-  gameInterval = setInterval(gameLoop, GAME_SPEED);
+  gameInterval = setInterval(gameLoop, currentSpeed);
   gamePaused = false;
   pauseButton.textContent = "Pause";
 }
 
-function endGame() {
+function endGame(isWin = false) {
   clearInterval(gameInterval);
 
   gameRunning = false;
@@ -285,13 +321,24 @@ function endGame() {
   autopilot.reset();
   lawnmowerAutopilot.reset();
 
-  showGameOverModal(score);
+  showGameOverModal(score, isWin);
 }
 
-function showGameOverModal(finalScore) {
+function showGameOverModal(finalScore, isWin = false) {
   const modal = document.getElementById("game-over-modal");
+  const modalTitle = modal.querySelector("h2");
   const scoreText = document.getElementById("final-score");
-  scoreText.textContent = `Your score: ${finalScore}`;
+  
+  if (isWin) {
+    modalTitle.textContent = "🎉 YOU WIN! 🎉";
+    scoreText.textContent = `Congratulations! You covered the entire grid!\nFinal score: ${finalScore}`;
+    scoreText.style.whiteSpace = "pre-line"; // Allow line breaks
+  } else {
+    modalTitle.textContent = "Game Over!";
+    scoreText.textContent = `Your score: ${finalScore}`;
+    scoreText.style.whiteSpace = "normal";
+  }
+  
   modal.classList.remove("hidden");
 }
 
@@ -359,6 +406,16 @@ function handleKeyPress(event) {
         }
         lawnmowerAutopilot.toggle();
       }
+      return;
+      
+    case ",":
+      event.preventDefault();
+      decreaseSpeed();
+      return;
+      
+    case ".":
+      event.preventDefault();
+      increaseSpeed();
       return;
   }
 

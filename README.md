@@ -10,9 +10,11 @@ A modern Snake game with AI autopilot modes built with HTML5, CSS3, and JavaScri
 
 - **Classic Snake Gameplay**: Collect food, grow longer, avoid collisions
 - **Dual AI Autopilot Modes**: Smart AI with A* pathfinding and Lawnmower pattern AI
+- **Manual Speed Control**: Adjust game speed in real-time with , and . keys
 - **Theme Toggle**: Dark/light mode with persistence
 - **Responsive Design**: Works on desktop and mobile
 - **Animated Elements**: Snake head with directional eyes, pulsing food
+- **Winning Condition**: Complete victory when covering the entire grid
 
 ## 🎯 Controls
 
@@ -22,6 +24,8 @@ A modern Snake game with AI autopilot modes built with HTML5, CSS3, and JavaScri
 - **T**: Toggle theme
 - **A**: Toggle Smart Autopilot (A* pathfinding)
 - **P**: Toggle Lawnmower Autopilot (systematic pattern)
+- **,** (comma): Decrease speed (slower)
+- **.** (period): Increase speed (faster)
 
 ## 🤖 AI Autopilot Modes
 
@@ -31,8 +35,8 @@ A modern Snake game with AI autopilot modes built with HTML5, CSS3, and JavaScri
 - Evaluates available space to prevent getting trapped
 
 ### Lawnmower Autopilot (P)
-- Systematic pattern-based movement
-- Intelligent pathfinding at lower speeds, switches to fixed pattern at higher speeds
+- Systematic pattern-based movement from the start
+- Uses fixed lawnmower pattern for complete grid coverage
 - Designed for maximum coverage and efficiency
 
 ## 🏗️ Project Structure

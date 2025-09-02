@@ -438,7 +438,7 @@ class LawnmowerAutopilot {
     this.updateDisplay();
     if (this.active) {
       this.resetPattern();
-      console.log("🤖 Lawnmower autopilot activated! Using systematic pattern...");
+      console.log("🤖 Lawnmower autopilot activated! Using fixed systematic pattern from start...");
     } else {
       console.log("❌ Lawnmower autopilot deactivated!");
     }
@@ -518,37 +518,27 @@ class LawnmowerAutopilot {
     // Check if snake has grown (food was eaten)
     if (!this.firstFoodEaten && snake.length > this.initialSnakeLength) {
       this.firstFoodEaten = true;
-      console.log("First food eaten! Starting intelligent pathfinding...");
+      console.log("First food eaten! Starting fixed lawnmower pattern...");
     }
 
     // Update speed level based on score
     const currentScore = (snake.length - this.initialSnakeLength) * 10;
     this.calculateSpeedLevel(currentScore);
 
-    // Use intelligent pathfinding until 1.30x speed, then switch to fixed pattern
-    if (this.speedLevel < 1.30) {
-      return this._chaseFood(head, body, food, gridSize);
-    } else {
-      // Use fixed lawnmower pattern for high speeds
-      if (this.speedLevel >= 1.30 && this.patternPhase === "eat_first_food") {
-        console.log(`Speed reached ${this.speedLevel.toFixed(2)}x! Switching to fixed lawnmower pattern...`);
-        this.patternPhase = "go_to_start";
-      }
-
-      switch (this.patternPhase) {
-        case "eat_first_food":
-          return this._eatFirstFood(head, body, food, gridSize);
-        case "go_to_start":
-          return this._goToStartPosition(head, body, gridSize);
-        case "moving_right":
-          return this._moveRightPattern(head, body, gridSize);
-        case "moving_left":
-          return this._moveLeftPattern(head, body, gridSize);
-        case "going_up":
-          return this._goUpPattern(head, body, gridSize);
-        case "complete_top_row":
-          return this._completeTopRow(head, body, gridSize);
-      }
+    // Always use fixed lawnmower pattern
+    switch (this.patternPhase) {
+      case "eat_first_food":
+        return this._eatFirstFood(head, body, food, gridSize);
+      case "go_to_start":
+        return this._goToStartPosition(head, body, gridSize);
+      case "moving_right":
+        return this._moveRightPattern(head, body, gridSize);
+      case "moving_left":
+        return this._moveLeftPattern(head, body, gridSize);
+      case "going_up":
+        return this._goUpPattern(head, body, gridSize);
+      case "complete_top_row":
+        return this._completeTopRow(head, body, gridSize);
     }
 
     return this._getSafeDirection(head, body, gridSize);
