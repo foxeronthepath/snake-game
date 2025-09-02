@@ -9,10 +9,12 @@ let nextDirection = "right";
 let score = 0;
 let gameInterval;
 let gameRunning = false;
+let gamePaused = false;
 
 const gridElement = document.getElementById("grid");
 const scoreElement = document.getElementById("score");
 const startButton = document.getElementById("start-btn");
+const pauseButton = document.getElementById("pause-btn");
 
 function initializeGrid() {
   gridElement.innerHTML = "";
@@ -125,19 +127,52 @@ function startGame() {
   gameRunning = true;
   startButton.textContent = "Restart Game";
 
+  pauseButton.classList.remove("hidden");
+
   gameInterval = setInterval(gameLoop, GAME_SPEED);
 
   updateDisplay();
 }
 
+function pauseGame() {
+  if (!gameRunning || gamePaused) return;
+
+  clearInterval(gameInterval);
+  gamePaused = true;
+  pauseButton.textContent = "Resume";
+}
+
+function resumeGame() {
+  if (!gameRunning || !gamePaused) return;
+
+  gameInterval = setInterval(gameLoop, GAME_SPEED);
+  gamePaused = false;
+  pauseButton.textContent = "Pause";
+}
+
+function togglePause() {
+  if (gamePaused) {
+    resumeGame();
+  } else {
+    pauseGame();
+  }
+}
+
 function endGame() {
   clearInterval(gameInterval);
   gameRunning = false;
+  gamePaused = false;
+
+  pauseButton.classList.add("hidden");
+  pauseButton.textContent = "Pause";
+
   alert(`Game Over! Your score: ${score}`);
   startButton.textContent = "Start Game";
 }
 
 function handleKeyPress(event) {
+  if (gamePaused) return;
+
   switch (event.key) {
     case "ArrowUp":
       if (direction !== "down") nextDirection = "up";
@@ -151,12 +186,16 @@ function handleKeyPress(event) {
     case "ArrowRight":
       if (direction !== "left") nextDirection = "right";
       break;
+    case " ": 
+      if (gameRunning) togglePause();
+      break;
   }
 }
 
 function init() {
   initializeGrid();
   startButton.addEventListener("click", startGame);
+  pauseButton.addEventListener("click", togglePause);
   document.addEventListener("keydown", handleKeyPress);
 }
 
