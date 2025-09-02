@@ -77,8 +77,9 @@ Visit the live game at: **[https://foxeronthepath.github.io/snake-game/](https:/
 ```
 snake-game/
 ├── index.html          # Main HTML file
-├── script.js           # Core game logic
-├── autopilot.js        # AI autopilot functionality
+├── js/                 # JavaScript modules
+│   ├── script.js       # Core game logic
+│   └── autopilot.js    # AI autopilot functionality
 ├── style.css           # Styling and animations
 └── README.md           # Project documentation
 ```
@@ -114,7 +115,7 @@ The game supports both light and dark themes with CSS custom properties:
 ```
 
 ### Game Settings
-Modify game constants in `script.js`:
+Modify game constants in `js/script.js`:
 
 ```javascript
 const GRID_SIZE = 20;        // Game board size
