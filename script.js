@@ -1,11 +1,18 @@
 const GRID_SIZE = 20;
 const CELL_SIZE = 20;
-const GAME_SPEED = 150; //milliseconds
+const GAME_SPEED = 100; // milliseconds
+const INITIAL_POSITION = { x: 10, y: 10 };
+const DIRECTIONS = {
+  UP: "up",
+  DOWN: "down",
+  LEFT: "left",
+  RIGHT: "right"
+};
 
-let snake = [{ x: 10, y: 10 }];
+let snake = [{ ...INITIAL_POSITION }];
 let food = { x: 5, y: 5 };
-let direction = "right";
-let nextDirection = "right";
+let direction = DIRECTIONS.RIGHT;
+let nextDirection = DIRECTIONS.RIGHT;
 let score = 0;
 let gameInterval;
 let gameRunning = false;
@@ -20,16 +27,12 @@ const themeToggle = document.getElementById("theme-switch-checkbox");
 
 function toggleTheme() {
   isDarkMode = !isDarkMode;
-
-  if (isDarkMode) {
-    document.documentElement.setAttribute("data-theme", "dark");
-    themeToggle.checked = true;
-    localStorage.setItem("snakeTheme", "dark");
-  } else {
-    document.documentElement.setAttribute("data-theme", "light");
-    themeToggle.checked = false;
-    localStorage.setItem("snakeTheme", "light");
-  }
+  
+  const theme = isDarkMode ? "dark" : "light";
+  document.documentElement.setAttribute("data-theme", theme);
+  themeToggle.checked = isDarkMode;
+  
+  localStorage.setItem("snakeTheme", theme);
 }
 
 function initializeGrid() {
@@ -47,6 +50,7 @@ function initializeGrid() {
 
 function generateFood() {
   let newFood;
+  
   do {
     newFood = {
       x: Math.floor(Math.random() * GRID_SIZE),
@@ -60,73 +64,85 @@ function generateFood() {
 }
 
 function updateDisplay() {
+
+  clearGameElements();
+  
+  drawSnakeBody();
+  
+  if (snake.length > 0) {
+    drawSnakeHead();
+  }
+
+  drawFood();
+  
+  scoreElement.textContent = score;
+}
+
+function clearGameElements() {
   document
     .querySelectorAll(".snake, .snake-head, .food, .snake-eye")
     .forEach((element) => {
       element.classList.remove("snake", "snake-head", "food");
-
+      
       const eyes = element.querySelectorAll(".snake-eye");
       eyes.forEach((eye) => eye.remove());
     });
+}
 
+function drawSnakeBody() {
   for (let i = 1; i < snake.length; i++) {
     const segment = snake[i];
     const cell = document.getElementById(`cell-${segment.x}-${segment.y}`);
     if (cell) cell.classList.add("snake");
   }
+}
 
-  if (snake.length > 0) {
-    const head = snake[0];
-    const headCell = document.getElementById(`cell-${head.x}-${head.y}`);
-    if (headCell) {
-      headCell.classList.add("snake-head");
-
-      headCell.style.position = "relative";
-
-      const leftEye = document.createElement("div");
-      const rightEye = document.createElement("div");
-      leftEye.className = "snake-eye";
-      rightEye.className = "snake-eye";
-
-      headCell.appendChild(leftEye);
-      headCell.appendChild(rightEye);
-
-      // Position eyes based on direction
-      switch (direction) {
-        case "up":
-          leftEye.style.top = "20%";
-          leftEye.style.left = "20%";
-          rightEye.style.top = "20%";
-          rightEye.style.right = "20%";
-          break;
-        case "down":
-          leftEye.style.bottom = "20%";
-          leftEye.style.left = "20%";
-          rightEye.style.bottom = "20%";
-          rightEye.style.right = "20%";
-          break;
-        case "left":
-          leftEye.style.top = "20%";
-          leftEye.style.left = "20%";
-          rightEye.style.bottom = "20%";
-          rightEye.style.left = "20%";
-          break;
-        case "right":
-          leftEye.style.top = "20%";
-          leftEye.style.right = "20%";
-          rightEye.style.bottom = "20%";
-          rightEye.style.right = "20%";
-          break;
-      }
+function drawSnakeHead() {
+  const head = snake[0];
+  const headCell = document.getElementById(`cell-${head.x}-${head.y}`);
+  
+  if (!headCell) return;
+  
+  headCell.classList.add("snake-head");
+  headCell.style.position = "relative";
+  
+  const leftEye = document.createElement("div");
+  const rightEye = document.createElement("div");
+  leftEye.className = "snake-eye";
+  rightEye.className = "snake-eye";
+  
+  headCell.appendChild(leftEye);
+  headCell.appendChild(rightEye);
+  
+  const eyePositions = {
+    [DIRECTIONS.UP]: {
+      left: { top: "20%", left: "20%" },
+      right: { top: "20%", right: "20%" }
+    },
+    [DIRECTIONS.DOWN]: {
+      left: { bottom: "20%", left: "20%" },
+      right: { bottom: "20%", right: "20%" }
+    },
+    [DIRECTIONS.LEFT]: {
+      left: { top: "20%", left: "20%" },
+      right: { bottom: "20%", left: "20%" }
+    },
+    [DIRECTIONS.RIGHT]: {
+      left: { top: "20%", right: "20%" },
+      right: { bottom: "20%", right: "20%" }
     }
-  }
+  };
+  
+  const positions = eyePositions[direction];
+  Object.assign(leftEye.style, positions.left);
+  Object.assign(rightEye.style, positions.right);
+}
 
-  // Draw food
+function drawFood() {
   const foodCell = document.getElementById(`cell-${food.x}-${food.y}`);
   if (foodCell) foodCell.classList.add("food");
-
-  scoreElement.textContent = score;
 }
+
 function checkCollision() {
   const head = snake[0];
 
@@ -148,16 +164,16 @@ function moveSnake() {
 
   const head = { ...snake[0] };
   switch (direction) {
-    case "up":
+    case DIRECTIONS.UP:
       head.y--;
       break;
-    case "down":
+    case DIRECTIONS.DOWN:
       head.y++;
       break;
-    case "left":
+    case DIRECTIONS.LEFT:
       head.x--;
       break;
-    case "right":
+    case DIRECTIONS.RIGHT:
       head.x++;
       break;
   }
@@ -183,46 +199,44 @@ function gameLoop() {
   moveSnake();
 }
 
-function startGame() {
-  if (gameRunning) {
-    restartGame();
+function startGame(isRestart = false) {
+  if (gameRunning && !isRestart) {
+    startGame(true);
     return;
   }
+  
+  if (isRestart) {
+    clearInterval(gameInterval);
+  }
 
-  snake = [{ x: 10, y: 10 }];
-  direction = "right";
-  nextDirection = "right";
+  snake = [{ ...INITIAL_POSITION }];
+  direction = DIRECTIONS.RIGHT;
+  nextDirection = DIRECTIONS.RIGHT;
   score = 0;
+  gameRunning = true;
+  gamePaused = false;
+  
   generateFood();
 
-  gameRunning = true;
   startButton.textContent = "Restart Game";
-
+  pauseButton.textContent = "Pause";
   pauseButton.classList.remove("hidden");
-
+  
   gameInterval = setInterval(gameLoop, GAME_SPEED);
-
+  
   updateDisplay();
 }
 
 function restartGame() {
-  clearInterval(gameInterval);
+  startGame(true);
+}
 
-  snake = [{ x: 10, y: 10 }];
-  direction = "right";
-  nextDirection = "right";
-  score = 0;
-
-  generateFood();
-
-  gameRunning = true;
-  gamePaused = false;
-
-  pauseButton.textContent = "Pause";
-
-  gameInterval = setInterval(gameLoop, GAME_SPEED);
-
-  updateDisplay();
+function togglePause() {
+  if (gamePaused) {
+    resumeGame();
+  } else {
+    pauseGame();
+  }
 }
 
 function pauseGame() {
@@ -241,75 +255,70 @@ function resumeGame() {
   pauseButton.textContent = "Pause";
 }
 
-function togglePause() {
-  if (gamePaused) {
-    resumeGame();
-  } else {
-    pauseGame();
-  }
-}
-
 function endGame() {
   clearInterval(gameInterval);
+  
   gameRunning = false;
   gamePaused = false;
 
   pauseButton.classList.add("hidden");
   pauseButton.textContent = "Pause";
-
-  alert(`Game Over! Your score: ${score}`);
   startButton.textContent = "Start Game";
+  
+  alert(`Game Over! Your score: ${score}`);
 }
 
 function handleKeyPress(event) {
-  if (event.key === " ") {
-    event.preventDefault();
-    if (!gameRunning) {
-      startGame();
-    } else {
-      togglePause();
-    }
-    return;
+  switch (event.key) {
+    case " ": 
+      event.preventDefault();
+      !gameRunning ? startGame() : togglePause();
+      return;
+      
+    case "r":
+      event.preventDefault();
+      restartGame();
+      return;
   }
-
-  if (event.key === "r") {
-    event.preventDefault();
-    restartGame();
-  }
-
+  
   if (gamePaused) return;
 
   switch (event.key) {
     case "ArrowUp":
-      if (direction !== "down") nextDirection = "up";
+      if (direction !== DIRECTIONS.DOWN) nextDirection = DIRECTIONS.UP;
       break;
     case "ArrowDown":
-      if (direction !== "up") nextDirection = "down";
+      if (direction !== DIRECTIONS.UP) nextDirection = DIRECTIONS.DOWN;
       break;
     case "ArrowLeft":
-      if (direction !== "right") nextDirection = "left";
+      if (direction !== DIRECTIONS.RIGHT) nextDirection = DIRECTIONS.LEFT;
       break;
     case "ArrowRight":
-      if (direction !== "left") nextDirection = "right";
+      if (direction !== DIRECTIONS.LEFT) nextDirection = DIRECTIONS.RIGHT;
       break;
   }
 }
 
 function init() {
   initializeGrid();
+  
   startButton.addEventListener("click", startGame);
   pauseButton.addEventListener("click", togglePause);
   themeToggle.addEventListener("change", toggleTheme);
   document.addEventListener("keydown", handleKeyPress);
 
+  loadThemePreference();
+}
+
+function loadThemePreference() {
   const savedTheme = localStorage.getItem("snakeTheme");
+  
+  isDarkMode = false;
+  themeToggle.checked = false;
+  
   if (savedTheme === "dark") {
-    isDarkMode = false;
     themeToggle.checked = true;
     toggleTheme();
-  } else {
-    isDarkMode = false;
-    themeToggle.checked = false;
   }
 }
 

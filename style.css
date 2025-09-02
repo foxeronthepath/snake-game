@@ -3,12 +3,12 @@
   --text-color: #333;
   --grid-bg: #fff;
   --grid-border: #333;
+  --grid-border-color: rgba(139, 139, 139, 0.1);
   --snake-color: #00c206;
   --snake-border: #000000;
   --snake-head-color: #008a07;
   --food-color: #f44336;
   --btn-bg-color: #2b2b2b;
-  --grid-border-color: rgba(139, 139, 139, 0.1);
 }
 
 html[data-theme="dark"] {
@@ -366,7 +366,6 @@ body {
   transition: var(--transition);
 }
 
-/* actions */
 
 .theme-switch__checkbox:checked + .theme-switch__container {
   background-color: var(--container-night-bg);
