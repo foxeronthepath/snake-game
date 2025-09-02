@@ -10,11 +10,27 @@ let score = 0;
 let gameInterval;
 let gameRunning = false;
 let gamePaused = false;
+let isDarkMode = false;
 
 const gridElement = document.getElementById("grid");
 const scoreElement = document.getElementById("score");
 const startButton = document.getElementById("start-btn");
 const pauseButton = document.getElementById("pause-btn");
+const themeToggle = document.getElementById("theme-switch-checkbox");
+
+function toggleTheme() {
+  isDarkMode = !isDarkMode;
+
+  if (isDarkMode) {
+    document.documentElement.setAttribute("data-theme", "dark");
+    themeToggle.checked = true;
+    localStorage.setItem("snakeTheme", "dark");
+  } else {
+    document.documentElement.setAttribute("data-theme", "light");
+    themeToggle.checked = false;
+    localStorage.setItem("snakeTheme", "light");
+  }
+}
 
 function initializeGrid() {
   gridElement.innerHTML = "";
@@ -44,21 +60,73 @@ function generateFood() {
 }
 
 function updateDisplay() {
-  document.querySelectorAll(".snake, .food").forEach((element) => {
-    element.classList.remove("snake", "food");
-  });
+  document
+    .querySelectorAll(".snake, .snake-head, .food, .snake-eye")
+    .forEach((element) => {
+      element.classList.remove("snake", "snake-head", "food");
 
-  snake.forEach((segment) => {
+      const eyes = element.querySelectorAll(".snake-eye");
+      eyes.forEach((eye) => eye.remove());
+    });
+
+  for (let i = 1; i < snake.length; i++) {
+    const segment = snake[i];
     const cell = document.getElementById(`cell-${segment.x}-${segment.y}`);
     if (cell) cell.classList.add("snake");
-  });
+  }
 
+  if (snake.length > 0) {
+    const head = snake[0];
+    const headCell = document.getElementById(`cell-${head.x}-${head.y}`);
+    if (headCell) {
+      headCell.classList.add("snake-head");
+
+      headCell.style.position = "relative";
+
+      const leftEye = document.createElement("div");
+      const rightEye = document.createElement("div");
+      leftEye.className = "snake-eye";
+      rightEye.className = "snake-eye";
+
+      headCell.appendChild(leftEye);
+      headCell.appendChild(rightEye);
+
+      // Position eyes based on direction
+      switch (direction) {
+        case "up":
+          leftEye.style.top = "20%";
+          leftEye.style.left = "20%";
+          rightEye.style.top = "20%";
+          rightEye.style.right = "20%";
+          break;
+        case "down":
+          leftEye.style.bottom = "20%";
+          leftEye.style.left = "20%";
+          rightEye.style.bottom = "20%";
+          rightEye.style.right = "20%";
+          break;
+        case "left":
+          leftEye.style.top = "20%";
+          leftEye.style.left = "20%";
+          rightEye.style.bottom = "20%";
+          rightEye.style.left = "20%";
+          break;
+        case "right":
+          leftEye.style.top = "20%";
+          leftEye.style.right = "20%";
+          rightEye.style.bottom = "20%";
+          rightEye.style.right = "20%";
+          break;
+      }
+    }
+  }
+
+  // Draw food
   const foodCell = document.getElementById(`cell-${food.x}-${food.y}`);
   if (foodCell) foodCell.classList.add("food");
 
   scoreElement.textContent = score;
 }
-
 function checkCollision() {
   const head = snake[0];
 
@@ -231,7 +299,18 @@ function init() {
   initializeGrid();
   startButton.addEventListener("click", startGame);
   pauseButton.addEventListener("click", togglePause);
+  themeToggle.addEventListener("change", toggleTheme);
   document.addEventListener("keydown", handleKeyPress);
+
+  const savedTheme = localStorage.getItem("snakeTheme");
+  if (savedTheme === "dark") {
+    isDarkMode = false;
+    themeToggle.checked = true;
+    toggleTheme();
+  } else {
+    isDarkMode = false;
+    themeToggle.checked = false;
+  }
 }
 
 window.addEventListener("load", init);
