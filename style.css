@@ -400,3 +400,41 @@ body {
   transform: translateY(-50%);
 }
 
+.modal {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: rgba(0,0,0,0.5);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000;
+}
+.modal-content {
+  background: var(--grid-bg);
+  color: var(--text-color);
+  padding: 32px 24px;
+  border-radius: 12px;
+  text-align: center;
+  min-width: 250px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+}
+.modal.hidden {
+  display: none;
+}
+
+#close-modal-btn {
+  margin-top: 12px;
+  padding: 12px 24px;
+  font-size: 16px;
+  background: #11af16;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+#final-score {
+  color: #eb1111;
+  font-size: 24px;
+  font-weight: bold;
+  margin-top: 12px;
+}

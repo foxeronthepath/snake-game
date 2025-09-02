@@ -12,6 +12,13 @@
   </head>
   <body>
     <main class="game-container">
+      <div id="game-over-modal" class="modal hidden">
+        <div class="modal-content">
+          <h2>Game Over!</h2>
+          <p id="final-score"></p>
+          <button id="close-modal-btn">Restart Game</button>
+        </div>
+      </div>
       <header class="header">
         <div class="header-top">
           <h1>Snake Game</h1>
@@ -19,7 +26,7 @@
             class="theme-switch"
             for="theme-switch-checkbox"
             aria-label="Toggle dark/light theme"
-          > 
+          >
             <input
               type="checkbox"
               class="theme-switch__checkbox"

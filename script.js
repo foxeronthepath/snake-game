@@ -6,7 +6,7 @@ const DIRECTIONS = {
   UP: "up",
   DOWN: "down",
   LEFT: "left",
-  RIGHT: "right"
+  RIGHT: "right",
 };
 
 let snake = [{ ...INITIAL_POSITION }];
@@ -27,11 +27,11 @@ const themeToggle = document.getElementById("theme-switch-checkbox");
 
 function toggleTheme() {
   isDarkMode = !isDarkMode;
-  
+
   const theme = isDarkMode ? "dark" : "light";
   document.documentElement.setAttribute("data-theme", theme);
   themeToggle.checked = isDarkMode;
-  
+
   localStorage.setItem("snakeTheme", theme);
 }
 
@@ -50,7 +50,7 @@ function initializeGrid() {
 
 function generateFood() {
   let newFood;
-  
+
   do {
     newFood = {
       x: Math.floor(Math.random() * GRID_SIZE),
@@ -64,17 +64,16 @@ function generateFood() {
 }
 
 function updateDisplay() {
-
   clearGameElements();
-  
+
   drawSnakeBody();
-  
+
   if (snake.length > 0) {
     drawSnakeHead();
   }
 
   drawFood();
-  
+
   scoreElement.textContent = score;
 }
 
@@ -83,7 +82,7 @@ function clearGameElements() {
     .querySelectorAll(".snake, .snake-head, .food, .snake-eye")
     .forEach((element) => {
       element.classList.remove("snake", "snake-head", "food");
-      
+
       const eyes = element.querySelectorAll(".snake-eye");
       eyes.forEach((eye) => eye.remove());
     });
@@ -100,39 +99,39 @@ function drawSnakeBody() {
 function drawSnakeHead() {
   const head = snake[0];
   const headCell = document.getElementById(`cell-${head.x}-${head.y}`);
-  
+
   if (!headCell) return;
-  
+
   headCell.classList.add("snake-head");
   headCell.style.position = "relative";
-  
+
   const leftEye = document.createElement("div");
   const rightEye = document.createElement("div");
   leftEye.className = "snake-eye";
   rightEye.className = "snake-eye";
-  
+
   headCell.appendChild(leftEye);
   headCell.appendChild(rightEye);
-  
+
   const eyePositions = {
     [DIRECTIONS.UP]: {
       left: { top: "20%", left: "20%" },
-      right: { top: "20%", right: "20%" }
+      right: { top: "20%", right: "20%" },
     },
     [DIRECTIONS.DOWN]: {
       left: { bottom: "20%", left: "20%" },
-      right: { bottom: "20%", right: "20%" }
+      right: { bottom: "20%", right: "20%" },
     },
     [DIRECTIONS.LEFT]: {
       left: { top: "20%", left: "20%" },
-      right: { bottom: "20%", left: "20%" }
+      right: { bottom: "20%", left: "20%" },
     },
     [DIRECTIONS.RIGHT]: {
       left: { top: "20%", right: "20%" },
-      right: { bottom: "20%", right: "20%" }
-    }
+      right: { bottom: "20%", right: "20%" },
+    },
   };
-  
+
   const positions = eyePositions[direction];
   Object.assign(leftEye.style, positions.left);
   Object.assign(rightEye.style, positions.right);
@@ -204,7 +203,7 @@ function startGame(isRestart = false) {
     startGame(true);
     return;
   }
-  
+
   if (isRestart) {
     clearInterval(gameInterval);
   }
@@ -215,15 +214,15 @@ function startGame(isRestart = false) {
   score = 0;
   gameRunning = true;
   gamePaused = false;
-  
+
   generateFood();
 
   startButton.textContent = "Restart Game";
   pauseButton.textContent = "Pause";
   pauseButton.classList.remove("hidden");
-  
+
   gameInterval = setInterval(gameLoop, GAME_SPEED);
-  
+
   updateDisplay();
 }
 
@@ -257,32 +256,73 @@ function resumeGame() {
 
 function endGame() {
   clearInterval(gameInterval);
-  
+
   gameRunning = false;
   gamePaused = false;
 
   pauseButton.classList.add("hidden");
   pauseButton.textContent = "Pause";
   startButton.textContent = "Start Game";
-  
-  alert(`Game Over! Your score: ${score}`);
+
+  showGameOverModal(score);
 }
 
+function showGameOverModal(finalScore) {
+  const modal = document.getElementById("game-over-modal");
+  const scoreText = document.getElementById("final-score");
+  scoreText.textContent = `Your score: ${finalScore}`;
+  modal.classList.remove("hidden");
+}
+
+function hideGameOverModal() {
+  const modal = document.getElementById("game-over-modal");
+  modal.classList.add("hidden");
+}
+
+// Add event listener for close button
+window.addEventListener("load", () => {
+  const closeBtn = document.getElementById("close-modal-btn");
+  if (closeBtn) {
+    closeBtn.addEventListener("click", () => {
+      hideGameOverModal();
+      restartGame();
+    });
+  }
+});
+
 function handleKeyPress(event) {
+  const modal = document.getElementById("game-over-modal");
+  const isModalVisible = !modal.classList.contains("hidden");
+
   switch (event.key) {
-    case " ": 
+    case " ":
       event.preventDefault();
-      !gameRunning ? startGame() : togglePause();
+      if (isModalVisible) {
+        hideGameOverModal();
+        restartGame();
+      } else {
+        !gameRunning ? startGame() : togglePause();
+      }
       return;
-      
+
     case "r":
       event.preventDefault();
+      hideGameOverModal();
       restartGame();
       return;
+      
+    case "t":
+    case "T":
+      // Toggle theme when T is pressed
+      event.preventDefault();
+      toggleTheme();
+      return;
   }
-  
-  if (gamePaused) return;
 
+  if (gamePaused) return;
+  if (!gameRunning) return;
+
+  // Direction keys handling
   switch (event.key) {
     case "ArrowUp":
       if (direction !== DIRECTIONS.DOWN) nextDirection = DIRECTIONS.UP;
@@ -297,11 +337,17 @@ function handleKeyPress(event) {
       if (direction !== DIRECTIONS.LEFT) nextDirection = DIRECTIONS.RIGHT;
       break;
   }
+
+  // Start the game loop if this is the first direction input
+  if (directionChanged && !snakeStarted && gameRunning) {
+    snakeStarted = true;
+    gameInterval = setInterval(gameLoop, GAME_SPEED);
+  }
 }
 
 function init() {
   initializeGrid();
-  
+
   startButton.addEventListener("click", startGame);
   pauseButton.addEventListener("click", togglePause);
   themeToggle.addEventListener("change", toggleTheme);
@@ -312,10 +358,10 @@ function init() {
 
 function loadThemePreference() {
   const savedTheme = localStorage.getItem("snakeTheme");
-  
+
   isDarkMode = false;
   themeToggle.checked = false;
-  
+
   if (savedTheme === "dark") {
     themeToggle.checked = true;
     toggleTheme();
