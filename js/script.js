@@ -1,11 +1,11 @@
-const GRID_SIZE = 10;
+const GRID_SIZE = 20;
 const CELL_SIZE = 20;
 let score = 0;
 const SPEED_LEVELS = [300, 200, 150, 100, 50, 25, 10, 5, 1]; // speed levels from slowest to fastest
 const DEFAULT_SPEED_INDEX = 2; // Index for 150ms (default)
 let currentSpeedIndex = DEFAULT_SPEED_INDEX;
 let currentSpeed = SPEED_LEVELS[currentSpeedIndex];
-const INITIAL_POSITION = { x: 5, y: 5 };
+const INITIAL_POSITION = { x: 10, y: 10 };
 const DIRECTIONS = {
   UP: "up",
   DOWN: "down",
@@ -14,7 +14,7 @@ const DIRECTIONS = {
 };
 
 let snake = [{ ...INITIAL_POSITION }];
-let food = { x: 5, y: 5 };
+let food = { x: 15, y: 15 };
 let direction = DIRECTIONS.RIGHT;
 let nextDirection = DIRECTIONS.RIGHT;
 let gameInterval;
@@ -42,7 +42,7 @@ function toggleTheme() {
 
 function toggleHelp() {
   controlHints.classList.toggle("hidden");
-  
+
   // Update button text based on visibility
   if (controlHints.classList.contains("hidden")) {
     helpButton.textContent = "Help";
