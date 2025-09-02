@@ -380,11 +380,6 @@ function handleKeyPress(event) {
       if (direction !== DIRECTIONS.LEFT) nextDirection = DIRECTIONS.RIGHT;
       break;
   }
-
-  if (directionChanged && !snakeStarted && gameRunning) {
-    snakeStarted = true;
-    gameInterval = setInterval(gameLoop, GAME_SPEED);
-  }
 }
 
 function init() {
