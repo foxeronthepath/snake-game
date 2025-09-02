@@ -14,10 +14,10 @@ A modern, feature-rich implementation of the classic Snake game built with HTML5
 
 ### Advanced Features
 - **🌙 Dark/Light Theme**: Toggle between themes with the 'T' key or theme switch
-- **🤖 Autopilot Mode**: Press 'A' to enable AI-controlled snake movement
+- **🤖 Smart Autopilot**: Press 'A' to enable AI-controlled snake movement with A* pathfinding
 - **📱 Responsive Design**: Works seamlessly on desktop and mobile devices
 - **💾 Theme Persistence**: Your theme preference is saved in localStorage
-- **🎯 Smart AI**: Autopilot uses pathfinding algorithms to find food efficiently
+- **🎯 Intelligent AI**: Advanced autopilot uses A* algorithm for optimal pathfinding
 
 ### Visual Enhancements
 - **Animated Snake Head**: Directional eyes that follow the snake's movement
@@ -84,20 +84,34 @@ snake-game/
 └── README.md           # Project documentation
 ```
 
-## 🧠 Autopilot AI
+## 🧠 Smart Autopilot AI
 
-The game features an intelligent autopilot system that can play the game automatically:
+The game features an advanced intelligent autopilot system with sophisticated pathfinding algorithms:
 
-- **Pathfinding Algorithm**: Uses Manhattan distance to find the shortest path to food
-- **Collision Avoidance**: Intelligently avoids walls and snake body
-- **Smart Movement**: Prevents immediate reversals that would cause death
+### Core Features
+- **A* Pathfinding Algorithm**: Uses A* search algorithm to find the optimal path to food
+- **Multi-layered Safety Logic**: Advanced collision avoidance with multiple fallback strategies
+- **Smart Direction Validation**: Prevents 180-degree turns and validates all moves for safety
+- **Space-aware Decision Making**: Evaluates available space to avoid getting trapped
 - **Toggle Control**: Press 'A' during gameplay to enable/disable
 
-### How the AI Works
-1. **Safety Check**: Evaluates all possible moves for immediate collisions
-2. **Distance Calculation**: Calculates Manhattan distance to food for each safe move
-3. **Optimal Choice**: Selects the move that gets closest to the food
-4. **Fallback Strategy**: Continues in current direction if no safe moves exist
+### How the Smart AI Works
+1. **Immediate Safety Assessment**: Always finds a safe direction to avoid immediate death, preferring forward movement
+2. **A* Pathfinding**: Primary algorithm that finds the optimal route to food using:
+   - Manhattan distance heuristic
+   - Priority queue for efficient pathfinding
+   - Obstacle avoidance (walls and snake body)
+   - Timeout protection to prevent performance issues
+3. **Simple Chase Fallback**: If A* fails, uses directional movement toward food with safety checks
+4. **Survival Mode**: When no path to food exists, uses space-scoring to find moves that preserve the most accessible space
+5. **Direction Validation**: Ensures all moves are valid and won't cause immediate collision
+
+### Algorithm Hierarchy
+The autopilot uses a sophisticated decision-making process:
+- **Primary**: A* pathfinding for optimal routes
+- **Secondary**: Simple directional chase with safety validation
+- **Tertiary**: Safe survival moves to avoid getting trapped
+- **Emergency**: Any immediately safe direction to prevent death
 
 ## 🎨 Customization
 
@@ -158,8 +172,10 @@ Contributions are welcome! Here's how you can help:
 - 🏆 High score leaderboard
 - 🎮 Touch controls for mobile
 - 🎨 Additional themes and customization options
-- 🧠 Improved AI algorithms
+- 🧠 Enhanced AI features (difficulty levels, learning algorithms)
 - 📊 Game statistics and analytics
+- ⚙️ Autopilot configuration options
+- 🎯 Multiple AI strategies to choose from
 
 ## 📄 License
 
@@ -182,4 +198,4 @@ This project is open source and available under the [MIT License](LICENSE).
 
 **Enjoy playing Snake! 🐍✨**
 
-*Press 'A' to watch the AI play, or use arrow keys to control the snake yourself!*
+*Press 'A' to watch the smart AI play with A* pathfinding, or use arrow keys to control the snake yourself!*

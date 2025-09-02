@@ -1,6 +1,7 @@
 const GRID_SIZE = 20;
 const CELL_SIZE = 20;
-const GAME_SPEED = 100; // milliseconds
+let score = 0;
+const GAME_SPEED = 150; // milliseconds
 const INITIAL_POSITION = { x: 10, y: 10 };
 const DIRECTIONS = {
   UP: "up",
@@ -13,7 +14,6 @@ let snake = [{ ...INITIAL_POSITION }];
 let food = { x: 5, y: 5 };
 let direction = DIRECTIONS.RIGHT;
 let nextDirection = DIRECTIONS.RIGHT;
-let score = 0;
 let gameInterval;
 let gameRunning = false;
 let gamePaused = false;
@@ -161,7 +161,10 @@ function checkCollision() {
 function moveSnake() {
   // Use autopilot if enabled
   if (autopilot.isEnabled()) {
-    nextDirection = autopilot.getNextDirection(snake, food, direction, GRID_SIZE);
+    const autopilotDirection = autopilot.getNextDirection(snake, food, direction, GRID_SIZE);
+    if (autopilotDirection) {
+      nextDirection = autopilotDirection;
+    }
   }
   
   direction = nextDirection;
