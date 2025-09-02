@@ -242,7 +242,7 @@ function moveSnake() {
     generateFood();
     
     // Check for winning condition: snake covers all grid except 1 cell (for food)
-    if (snake.length === GRID_SIZE * GRID_SIZE - 1) {
+    if (snake.length === GRID_SIZE * GRID_SIZE) {
       endGame(true); // Pass true to indicate winning
       return;
     }
@@ -349,7 +349,7 @@ function showGameOverModal(finalScore, isWin = false) {
   
   if (isWin) {
     modalTitle.textContent = "🎉 YOU WIN! 🎉";
-    scoreText.textContent = `Congratulations! You covered the entire grid!\nFinal score: ${finalScore}`;
+    scoreText.textContent = `Congratulations!\nFinal score: ${finalScore}`;
     scoreText.style.whiteSpace = "pre-line"; // Allow line breaks
   } else {
     modalTitle.textContent = "Game Over!";
