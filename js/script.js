@@ -242,7 +242,7 @@ function moveSnake() {
     generateFood();
     
     // Check for winning condition: snake covers all grid except 1 cell (for food)
-    if (snake.length === GRID_SIZE * GRID_SIZE) {
+    if (snake.length === GRID_SIZE * GRID_SIZE - 1) {
       endGame(true); // Pass true to indicate winning
       return;
     }
