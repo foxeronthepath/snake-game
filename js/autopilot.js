@@ -21,9 +21,9 @@ class SmartSnakeAutopilot {
     this.active = !this.active;
     this.updateDisplay();
     if (this.active) {
-      console.log("Smart autopilot activated! Using A* pathfinding...");
+      console.log("🧠 Smart autopilot activated! Using A* pathfinding...");
     } else {
-      console.log("Smart autopilot deactivated!");
+      console.log("❌ Smart autopilot deactivated!");
     }
     return this.active;
   }
@@ -51,6 +51,27 @@ class SmartSnakeAutopilot {
       autopilotStatus.textContent = this.active ? "SMART AUTOPILOT: ON" : "SMART AUTOPILOT: OFF";
       autopilotStatus.style.color = this.active ? "#00c206" : "#666";
     }
+    
+    // Update page title to show autopilot status
+    this.updatePageTitle();
+    
+    // If status element doesn't exist, log to console instead
+    if (!autopilotStatus && this.active) {
+      console.log("Smart Autopilot: ACTIVATED");
+    }
+  }
+
+  updatePageTitle() {
+    const lawnmowerActive = window.lawnmowerAutopilot && window.lawnmowerAutopilot.isActive();
+    let title = "Snake Game";
+    
+    if (this.active) {
+      title = "🧠 Snake Game (Smart AI)";
+    } else if (lawnmowerActive) {
+      title = "🤖 Snake Game (Lawnmower AI)";
+    }
+    
+    document.title = title;
   }
 
   // Main entry point for getting next direction using smart algorithms
@@ -417,9 +438,9 @@ class LawnmowerAutopilot {
     this.updateDisplay();
     if (this.active) {
       this.resetPattern();
-      console.log("Lawnmower autopilot activated! Using systematic pattern...");
+      console.log("🤖 Lawnmower autopilot activated! Using systematic pattern...");
     } else {
-      console.log("Lawnmower autopilot deactivated!");
+      console.log("❌ Lawnmower autopilot deactivated!");
     }
     return this.active;
   }
@@ -452,6 +473,27 @@ class LawnmowerAutopilot {
       autopilotStatus.textContent = this.active ? "LAWNMOWER AUTOPILOT: ON" : "LAWNMOWER AUTOPILOT: OFF";
       autopilotStatus.style.color = this.active ? "#ff6b35" : "#666";
     }
+    
+    // Update page title to show autopilot status
+    this.updatePageTitle();
+    
+    // If status element doesn't exist, log to console instead
+    if (!autopilotStatus && this.active) {
+      console.log("Lawnmower Autopilot: ACTIVATED");
+    }
+  }
+
+  updatePageTitle() {
+    const smartActive = window.autopilot && window.autopilot.isActive();
+    let title = "Snake Game";
+    
+    if (this.active) {
+      title = "🤖 Snake Game (Lawnmower AI)";
+    } else if (smartActive) {
+      title = "🧠 Snake Game (Smart AI)";
+    }
+    
+    document.title = title;
   }
 
   // Calculate speed level based on score
@@ -756,3 +798,7 @@ class LawnmowerAutopilot {
 // Create global autopilot instances
 const autopilot = new SmartSnakeAutopilot();
 const lawnmowerAutopilot = new LawnmowerAutopilot();
+
+// Make them available globally for cross-reference
+window.autopilot = autopilot;
+window.lawnmowerAutopilot = lawnmowerAutopilot;

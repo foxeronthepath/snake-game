@@ -144,8 +144,13 @@ body {
 }
 
 .control-hints strong {
-  color: #e23500;
-  font-weight: bold;
+  color: #e23500 !important;
+  font-weight: bold !important;
+}
+
+html[data-theme="dark"] .control-hints strong {
+  color: #ff6b35 !important;
+  font-weight: bold !important;
 }
 
 .buttons {
