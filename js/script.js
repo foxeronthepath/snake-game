@@ -1,11 +1,10 @@
 const GRID_SIZE = 20;
 const CELL_SIZE = 20;
 let score = 0;
-const GAME_SPEED = 150; // milliseconds (default speed)
-const MIN_SPEED = 5;   // fastest speed (lower number = faster)
-const MAX_SPEED = 300;  // slowest speed (higher number = slower)
-const SPEED_STEP = 5;  // speed change increment
-let currentSpeed = GAME_SPEED;
+const SPEED_LEVELS = [300, 200, 150, 100, 50, 25, 10, 5, 1]; // speed levels from slowest to fastest
+const DEFAULT_SPEED_INDEX = 2; // Index for 150ms (default)
+let currentSpeedIndex = DEFAULT_SPEED_INDEX;
+let currentSpeed = SPEED_LEVELS[currentSpeedIndex];
 const INITIAL_POSITION = { x: 10, y: 10 };
 const DIRECTIONS = {
   UP: "up",
@@ -40,30 +39,32 @@ function toggleTheme() {
 }
 
 function increaseSpeed() {
-  console.log(`🚀 increaseSpeed() called! Current speed: ${currentSpeed}ms, MIN_SPEED: ${MIN_SPEED}ms`);
-  if (currentSpeed > MIN_SPEED) {
+  console.log(`🚀 increaseSpeed() called! Current index: ${currentSpeedIndex}, speed: ${currentSpeed}ms`);
+  if (currentSpeedIndex < SPEED_LEVELS.length - 1) {
     const oldSpeed = currentSpeed;
-    currentSpeed -= SPEED_STEP;
-    if (currentSpeed < MIN_SPEED) currentSpeed = MIN_SPEED;
-    console.log(`🚀 Speed changed from ${oldSpeed}ms to ${currentSpeed}ms`);
+    const oldIndex = currentSpeedIndex;
+    currentSpeedIndex++;
+    currentSpeed = SPEED_LEVELS[currentSpeedIndex];
+    console.log(`🚀 Speed level changed from ${oldIndex}(${oldSpeed}ms) to ${currentSpeedIndex}(${currentSpeed}ms)`);
     updateGameSpeed();
-    console.log(`🚀 Speed increased! Current speed: ${currentSpeed}ms`);
+    console.log(`🚀 Speed increased! Level ${currentSpeedIndex + 1}/${SPEED_LEVELS.length}: ${currentSpeed}ms`);
   } else {
-    console.log(`🚀 Cannot increase speed - already at minimum: ${currentSpeed}ms`);
+    console.log(`🚀 Cannot increase speed - already at fastest level: ${currentSpeed}ms`);
   }
 }
 
 function decreaseSpeed() {
-  console.log(`🐌 decreaseSpeed() called! Current speed: ${currentSpeed}ms, MAX_SPEED: ${MAX_SPEED}ms`);
-  if (currentSpeed < MAX_SPEED) {
+  console.log(`🐌 decreaseSpeed() called! Current index: ${currentSpeedIndex}, speed: ${currentSpeed}ms`);
+  if (currentSpeedIndex > 0) {
     const oldSpeed = currentSpeed;
-    currentSpeed += SPEED_STEP;
-    if (currentSpeed > MAX_SPEED) currentSpeed = MAX_SPEED;
-    console.log(`🐌 Speed changed from ${oldSpeed}ms to ${currentSpeed}ms`);
+    const oldIndex = currentSpeedIndex;
+    currentSpeedIndex--;
+    currentSpeed = SPEED_LEVELS[currentSpeedIndex];
+    console.log(`🐌 Speed level changed from ${oldIndex}(${oldSpeed}ms) to ${currentSpeedIndex}(${currentSpeed}ms)`);
     updateGameSpeed();
-    console.log(`🐌 Speed decreased! Current speed: ${currentSpeed}ms`);
+    console.log(`🐌 Speed decreased! Level ${currentSpeedIndex + 1}/${SPEED_LEVELS.length}: ${currentSpeed}ms`);
   } else {
-    console.log(`🐌 Cannot decrease speed - already at maximum: ${currentSpeed}ms`);
+    console.log(`🐌 Cannot decrease speed - already at slowest level: ${currentSpeed}ms`);
   }
 }
 
@@ -275,7 +276,8 @@ function startGame(isRestart = false) {
   direction = DIRECTIONS.RIGHT;
   nextDirection = DIRECTIONS.RIGHT;
   score = 0;
-  currentSpeed = GAME_SPEED; // Reset speed to default
+  currentSpeedIndex = DEFAULT_SPEED_INDEX; // Reset to default speed level
+  currentSpeed = SPEED_LEVELS[currentSpeedIndex];
   gameRunning = true;
   gamePaused = false;
 
@@ -289,7 +291,7 @@ function startGame(isRestart = false) {
   autopilot.reset();
   lawnmowerAutopilot.reset();
 
-  console.log(`🎮 Game started with speed: ${currentSpeed}ms (MIN: ${MIN_SPEED}ms, MAX: ${MAX_SPEED}ms, STEP: ${SPEED_STEP}ms)`);
+  console.log(`🎮 Game started with speed level ${currentSpeedIndex + 1}/${SPEED_LEVELS.length}: ${currentSpeed}ms (Available levels: ${SPEED_LEVELS.join(', ')}ms)`);
   gameInterval = setInterval(gameLoop, currentSpeed);
 
   updateDisplay();

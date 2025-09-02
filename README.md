@@ -10,7 +10,7 @@ A modern Snake game with AI autopilot modes built with HTML5, CSS3, and JavaScri
 
 - **Classic Snake Gameplay**: Collect food, grow longer, avoid collisions
 - **Dual AI Autopilot Modes**: Smart AI with A* pathfinding and Lawnmower pattern AI
-- **Manual Speed Control**: Adjust game speed in real-time with , and . keys
+- **9 Speed Levels**: Cycle through fixed speed presets from 300ms to 1ms
 - **Theme Toggle**: Dark/light mode with persistence
 - **Responsive Design**: Works on desktop and mobile
 - **Animated Elements**: Snake head with directional eyes, pulsing food
@@ -24,8 +24,24 @@ A modern Snake game with AI autopilot modes built with HTML5, CSS3, and JavaScri
 - **T**: Toggle theme
 - **A**: Toggle Smart Autopilot (A* pathfinding)
 - **P**: Toggle Lawnmower Autopilot (systematic pattern)
-- **,** (comma): Decrease speed (slower)
-- **.** (period): Increase speed (faster)
+- **,** (comma): Cycle to slower speed level
+- **.** (period): Cycle to faster speed level
+
+## ⚡ Speed Levels
+
+The game features 9 distinct speed levels you can cycle through:
+
+1. **Level 1**: 300ms (slowest - strategic play)
+2. **Level 2**: 200ms 
+3. **Level 3**: 150ms (default starting speed) ⭐
+4. **Level 4**: 100ms
+5. **Level 5**: 50ms
+6. **Level 6**: 25ms
+7. **Level 7**: 10ms
+8. **Level 8**: 5ms
+9. **Level 9**: 1ms (fastest - lightning speed)
+
+**Note**: Speed resets to Level 3 (150ms) when starting a new game.
 
 ## 🤖 AI Autopilot Modes
 
