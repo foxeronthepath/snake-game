@@ -292,6 +292,11 @@ function moveSnake() {
 
   if (head.x === food.x && head.y === food.y) {
     score += 10;
+    
+    // Play eat sound effect
+    if (window.audioManager) {
+      audioManager.playEatSound();
+    }
 
     // Check for winning condition: if snake would cover all cells after eating
     if (snake.length === GRID_SIZE * GRID_SIZE - 1) {
@@ -311,6 +316,12 @@ function moveSnake() {
       }
 
       updateDisplay(); // Show the final winning state with food in last empty cell
+      
+      // Play win sound effect
+      if (window.audioManager) {
+        audioManager.playWinSound();
+      }
+      
       endGame(true); // Pass true to indicate winning
       console.log("🎉 YOU WIN! 🎉");
       return;
@@ -322,6 +333,11 @@ function moveSnake() {
   }
 
   if (checkCollision()) {
+    // Play death sound effect
+    if (window.audioManager) {
+      audioManager.playDeathSound();
+    }
+    
     endGame();
     return;
   }
@@ -367,6 +383,12 @@ function startGame(isRestart = false) {
       SPEED_LEVELS.length
     }: ${currentSpeed}ms (Available levels: ${SPEED_LEVELS.join(", ")}ms)`
   );
+  
+  // Start background music
+  if (window.audioManager) {
+    audioManager.playBackgroundMusic();
+  }
+  
   gameInterval = setInterval(gameLoop, currentSpeed);
 
   updateDisplay();
@@ -390,6 +412,11 @@ function pauseGame() {
   clearInterval(gameInterval);
   gamePaused = true;
   pauseButton.textContent = "Resume";
+  
+  // Pause background music
+  if (window.audioManager) {
+    audioManager.pauseBackgroundMusic();
+  }
 }
 
 function resumeGame() {
@@ -398,6 +425,11 @@ function resumeGame() {
   gameInterval = setInterval(gameLoop, currentSpeed);
   gamePaused = false;
   pauseButton.textContent = "Pause";
+  
+  // Resume background music
+  if (window.audioManager) {
+    audioManager.resumeBackgroundMusic();
+  }
 }
 
 function endGame(isWin = false) {
@@ -409,6 +441,11 @@ function endGame(isWin = false) {
   pauseButton.classList.add("hidden");
   pauseButton.textContent = "Pause";
   startButton.textContent = "Start Game";
+
+  // Stop background music
+  if (window.audioManager) {
+    audioManager.stopBackgroundMusic();
+  }
 
   // Reset both autopilots when game ends
   autopilot.reset();
@@ -509,6 +546,24 @@ function handleKeyPress(event) {
     case ".":
       event.preventDefault();
       increaseSpeed();
+      return;
+
+    case "s":
+    case "S":
+      event.preventDefault();
+      if (window.audioManager) {
+        audioManager.toggleSounds();
+        audioManager.updateUIFromSettings();
+      }
+      return;
+
+    case "m":
+    case "M":
+      event.preventDefault();
+      if (window.audioManager) {
+        audioManager.toggleMusic();
+        audioManager.updateUIFromSettings();
+      }
       return;
   }
 

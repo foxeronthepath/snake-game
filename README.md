@@ -11,6 +11,7 @@ A modern Snake game with AI autopilot modes built with HTML5, CSS3, and JavaScri
 - **Classic Snake Gameplay**: Collect food, grow longer, avoid collisions
 - **Dual AI Autopilot Modes**: Smart AI with A* pathfinding and Lawnmower pattern AI
 - **9 Speed Levels**: Cycle through fixed speed presets from 300ms to 1ms
+- **🎵 Audio System**: Sound effects and background music with volume controls
 - **Theme Toggle**: Dark/light mode with persistence
 - **Responsive Design**: Works on desktop and mobile
 - **Animated Elements**: Snake head with directional eyes, pulsing food
@@ -24,8 +25,34 @@ A modern Snake game with AI autopilot modes built with HTML5, CSS3, and JavaScri
 - **T**: Toggle theme
 - **A**: Toggle Smart Autopilot (A* pathfinding)
 - **P**: Toggle Lawnmower Autopilot (systematic pattern)
+- **S**: Toggle sound effects on/off
+- **M**: Toggle background music on/off
 - **,** (comma): Cycle to slower speed level
 - **.** (period): Cycle to faster speed level
+
+## 🎵 Audio System
+
+The game includes a comprehensive audio system with:
+
+- **Sound Effects**: 
+  - Eating food sound
+  - Death/collision sound  
+  - Victory/win sound
+- **Background Music**: Looping music during gameplay
+- **Volume Controls**: Separate sliders for sound effects and music
+- **Toggle Controls**: Individual on/off switches for sounds and music
+- **Persistent Settings**: Audio preferences saved in browser
+- **Keyboard Shortcuts**: Quick S/M key toggles
+
+### Audio Setup
+1. Create a `sounds/` folder in your game directory
+2. Add WAV audio files with these exact names:
+   - `eat.wav` - Sound when eating food
+   - `death.wav` - Sound when snake dies
+   - `win.wav` - Sound when player wins  
+   - `background.wav` - Background music (loops automatically)
+
+The game works perfectly without audio files - they're completely optional!
 
 ## ⚡ Speed Levels
 

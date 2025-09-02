@@ -30,7 +30,7 @@
             <input
               type="checkbox"
               class="theme-switch__checkbox"
-              id="theme-switch-checkbox"
+              id="theme-switch-checkbox" 
               aria-hidden="true"
             />
             <div class="theme-switch__container">
@@ -120,6 +120,9 @@
           <button id="start-btn" type="button">Start Game</button>
           <button id="pause-btn" class="hidden" type="button">Pause</button>
           <button id="help-btn" type="button">Help</button>
+          <button id="audio-panel-toggle" class="audio-toggle-btn" type="button" title="Audio Settings">
+            🔊
+          </button>
         </div>
         <div class="control-hints hidden" id="control-hints">
           <p>
@@ -131,9 +134,60 @@
             | <strong>T</strong> = Toggle Theme
           </p>
           <p><strong>,</strong> = Slower | <strong>.</strong> = Faster</p>
+          <p><strong>S</strong> = Toggle Sounds | <strong>M</strong> = Toggle Music</p>
+        </div>
+        
+        <!-- Audio Controls Panel -->
+        <div class="audio-panel hidden" id="audio-panel">
+          <h3>Audio Settings</h3>
+          
+          <!-- Sound Effects Controls -->
+          <div class="audio-control-group">
+            <div class="audio-control-header">
+              <span class="audio-label">Sound Effects</span>
+              <button id="sounds-toggle" class="toggle-btn active" type="button">ON</button>
+            </div>
+            <div class="volume-control">
+              <span class="volume-label">🔇</span>
+              <input 
+                type="range" 
+                id="sounds-volume" 
+                class="volume-slider" 
+                min="0" 
+                max="100" 
+                value="70"
+                title="Sound Effects Volume"
+              />
+              <span class="volume-label">🔊</span>
+              <span class="volume-display" id="sounds-volume-display">70%</span>
+            </div>
+          </div>
+          
+          <!-- Background Music Controls -->
+          <div class="audio-control-group">
+            <div class="audio-control-header">
+              <span class="audio-label">Background Music</span>
+              <button id="music-toggle" class="toggle-btn active" type="button">ON</button>
+            </div>
+            <div class="volume-control">
+              <span class="volume-label">🔇</span>
+              <input 
+                type="range" 
+                id="music-volume" 
+                class="volume-slider" 
+                min="0" 
+                max="100" 
+                value="30"
+                title="Background Music Volume"
+              />
+              <span class="volume-label">🔊</span>
+              <span class="volume-display" id="music-volume-display">30%</span>
+            </div>
+          </div>
         </div>
       </section>
     </main>
+    <script src="./js/audio.js"></script>
     <script src="./js/autopilot.js"></script>
     <script src="./js/script.js"></script>
   </body>
