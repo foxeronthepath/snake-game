@@ -26,6 +26,8 @@ const gridElement = document.getElementById("grid");
 const scoreElement = document.getElementById("score");
 const startButton = document.getElementById("start-btn");
 const pauseButton = document.getElementById("pause-btn");
+const helpButton = document.getElementById("help-btn");
+const controlHints = document.getElementById("control-hints");
 const themeToggle = document.getElementById("theme-switch-checkbox");
 
 function toggleTheme() {
@@ -36,6 +38,17 @@ function toggleTheme() {
   themeToggle.checked = isDarkMode;
 
   localStorage.setItem("snakeTheme", theme);
+}
+
+function toggleHelp() {
+  controlHints.classList.toggle("hidden");
+  
+  // Update button text based on visibility
+  if (controlHints.classList.contains("hidden")) {
+    helpButton.textContent = "Help";
+  } else {
+    helpButton.textContent = "Hide Help";
+  }
 }
 
 function increaseSpeed() {
@@ -523,6 +536,7 @@ function init() {
 
   startButton.addEventListener("click", startGame);
   pauseButton.addEventListener("click", togglePause);
+  helpButton.addEventListener("click", toggleHelp);
   themeToggle.addEventListener("change", toggleTheme);
   document.addEventListener("keydown", handleKeyPress);
 
