@@ -718,7 +718,11 @@ html[data-theme="dark"] .control-hints strong {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--snake-color), var(--snake-head-color));
+  background: linear-gradient(
+    135deg,
+    var(--snake-color),
+    var(--snake-head-color)
+  );
   display: flex;
   align-items: center;
   justify-content: center;
@@ -733,12 +737,6 @@ html[data-theme="dark"] .control-hints strong {
   border-radius: 50%;
   transition: all 0.3s ease;
 }
-
-.logo-image:hover {
-  transform: scale(1.1);
-}
-
-
 
 .nickname {
   color: var(--text-color);
