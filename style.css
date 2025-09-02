@@ -265,7 +265,6 @@ html[data-theme="dark"] .control-hints strong {
   white-space: nowrap;
   z-index: 10;
 }
-
 */
 
 .theme-switch:hover::after {
@@ -688,3 +687,75 @@ html[data-theme="dark"] .control-hints strong {
   min-width: 35px;
   text-align: right;
 }
+
+/* Developer Credit */
+.developer-credit {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9999;
+  opacity: 0.8;
+  transition: all 0.3s ease;
+}
+
+.developer-credit:hover {
+  opacity: 1;
+  transform: scale(1.05);
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 25px;
+  padding: 6px 12px 6px 6px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.logo-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--snake-color), var(--snake-head-color));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.logo-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.logo-image:hover {
+  transform: scale(1.1);
+}
+
+
+
+.nickname {
+  color: var(--text-color);
+  font-size: 12px;
+  font-weight: 500;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  opacity: 0.9;
+  user-select: none;
+}
+
+/* Dark theme adjustments for developer credit */
+[data-theme="dark"] .logo-container {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+[data-theme="dark"] .nickname {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
