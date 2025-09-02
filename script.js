@@ -279,7 +279,6 @@ function hideGameOverModal() {
   modal.classList.add("hidden");
 }
 
-// Add event listener for close button
 window.addEventListener("load", () => {
   const closeBtn = document.getElementById("close-modal-btn");
   if (closeBtn) {
@@ -313,7 +312,7 @@ function handleKeyPress(event) {
       
     case "t":
     case "T":
-      // Toggle theme when T is pressed
+
       event.preventDefault();
       toggleTheme();
       return;
@@ -322,7 +321,7 @@ function handleKeyPress(event) {
   if (gamePaused) return;
   if (!gameRunning) return;
 
-  // Direction keys handling
+
   switch (event.key) {
     case "ArrowUp":
       if (direction !== DIRECTIONS.DOWN) nextDirection = DIRECTIONS.UP;
@@ -338,7 +337,6 @@ function handleKeyPress(event) {
       break;
   }
 
-  // Start the game loop if this is the first direction input
   if (directionChanged && !snakeStarted && gameRunning) {
     snakeStarted = true;
     gameInterval = setInterval(gameLoop, GAME_SPEED);
