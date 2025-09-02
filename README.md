@@ -35,23 +35,6 @@ A modern Snake game with AI autopilot modes built with HTML5, CSS3, and JavaScri
 - Intelligent pathfinding at lower speeds, switches to fixed pattern at higher speeds
 - Designed for maximum coverage and efficiency
 
-## 🚀 Quick Start
-
-1. **Clone and Run**:
-   ```bash
-   git clone https://github.com/foxeronthepath/snake-game.git
-   cd snake-game
-   ```
-
-2. **Open `index.html` in your browser** or use a local server:
-   ```bash
-   python -m http.server 8000
-   # or
-   npx serve .
-   ```
-
-3. **Play**: Press Spacebar to start, use arrow keys to control, or try the AI modes!
-
 ## 🏗️ Project Structure
 
 ```
