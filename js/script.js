@@ -40,27 +40,42 @@ function toggleTheme() {
 }
 
 function increaseSpeed() {
+  console.log(`🚀 increaseSpeed() called! Current speed: ${currentSpeed}ms, MIN_SPEED: ${MIN_SPEED}ms`);
   if (currentSpeed > MIN_SPEED) {
+    const oldSpeed = currentSpeed;
     currentSpeed -= SPEED_STEP;
     if (currentSpeed < MIN_SPEED) currentSpeed = MIN_SPEED;
+    console.log(`🚀 Speed changed from ${oldSpeed}ms to ${currentSpeed}ms`);
     updateGameSpeed();
-    console.log(`Speed increased! Current speed: ${currentSpeed}ms`);
+    console.log(`🚀 Speed increased! Current speed: ${currentSpeed}ms`);
+  } else {
+    console.log(`🚀 Cannot increase speed - already at minimum: ${currentSpeed}ms`);
   }
 }
 
 function decreaseSpeed() {
+  console.log(`🐌 decreaseSpeed() called! Current speed: ${currentSpeed}ms, MAX_SPEED: ${MAX_SPEED}ms`);
   if (currentSpeed < MAX_SPEED) {
+    const oldSpeed = currentSpeed;
     currentSpeed += SPEED_STEP;
     if (currentSpeed > MAX_SPEED) currentSpeed = MAX_SPEED;
+    console.log(`🐌 Speed changed from ${oldSpeed}ms to ${currentSpeed}ms`);
     updateGameSpeed();
-    console.log(`Speed decreased! Current speed: ${currentSpeed}ms`);
+    console.log(`🐌 Speed decreased! Current speed: ${currentSpeed}ms`);
+  } else {
+    console.log(`🐌 Cannot decrease speed - already at maximum: ${currentSpeed}ms`);
   }
 }
 
 function updateGameSpeed() {
+  console.log(`⚙️ updateGameSpeed() called! gameRunning: ${gameRunning}, gamePaused: ${gamePaused}, currentSpeed: ${currentSpeed}ms`);
   if (gameRunning && !gamePaused) {
+    console.log(`⚙️ Clearing old interval and setting new one with ${currentSpeed}ms`);
     clearInterval(gameInterval);
     gameInterval = setInterval(gameLoop, currentSpeed);
+    console.log(`⚙️ New game interval set successfully`);
+  } else {
+    console.log(`⚙️ Game not running or paused - interval not updated`);
   }
 }
 
@@ -274,6 +289,7 @@ function startGame(isRestart = false) {
   autopilot.reset();
   lawnmowerAutopilot.reset();
 
+  console.log(`🎮 Game started with speed: ${currentSpeed}ms (MIN: ${MIN_SPEED}ms, MAX: ${MAX_SPEED}ms, STEP: ${SPEED_STEP}ms)`);
   gameInterval = setInterval(gameLoop, currentSpeed);
 
   updateDisplay();
@@ -358,6 +374,7 @@ window.addEventListener("load", () => {
 });
 
 function handleKeyPress(event) {
+  console.log(`🔑 Key pressed: "${event.key}" (code: ${event.code})`);
   const modal = document.getElementById("game-over-modal");
   const isModalVisible = !modal.classList.contains("hidden");
 
@@ -409,11 +426,13 @@ function handleKeyPress(event) {
       return;
       
     case ",":
+      console.log(`🔑 Comma key detected!`);
       event.preventDefault();
       decreaseSpeed();
       return;
       
     case ".":
+      console.log(`🔑 Period key detected!`);
       event.preventDefault();
       increaseSpeed();
       return;
