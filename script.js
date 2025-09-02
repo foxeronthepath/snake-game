@@ -159,6 +159,11 @@ function checkCollision() {
 }
 
 function moveSnake() {
+  // Use autopilot if enabled
+  if (autopilot.isEnabled()) {
+    nextDirection = autopilot.getNextDirection(snake, food, direction, GRID_SIZE);
+  }
+  
   direction = nextDirection;
 
   const head = { ...snake[0] };
@@ -221,6 +226,9 @@ function startGame(isRestart = false) {
   pauseButton.textContent = "Pause";
   pauseButton.classList.remove("hidden");
 
+  // Reset autopilot when starting new game
+  autopilot.reset();
+
   gameInterval = setInterval(gameLoop, GAME_SPEED);
 
   updateDisplay();
@@ -263,6 +271,9 @@ function endGame() {
   pauseButton.classList.add("hidden");
   pauseButton.textContent = "Pause";
   startButton.textContent = "Start Game";
+
+  // Reset autopilot when game ends
+  autopilot.reset();
 
   showGameOverModal(score);
 }
@@ -312,9 +323,16 @@ function handleKeyPress(event) {
       
     case "t":
     case "T":
-
       event.preventDefault();
       toggleTheme();
+      return;
+      
+    case "a":
+    case "A":
+      event.preventDefault();
+      if (gameRunning) {
+        autopilot.toggle();
+      }
       return;
   }
 
@@ -350,6 +368,9 @@ function init() {
   pauseButton.addEventListener("click", togglePause);
   themeToggle.addEventListener("change", toggleTheme);
   document.addEventListener("keydown", handleKeyPress);
+
+  // Initialize autopilot display
+  autopilot.updateDisplay();
 
   loadThemePreference();
 }
