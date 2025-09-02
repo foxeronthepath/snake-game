@@ -116,7 +116,10 @@ function gameLoop() {
 }
 
 function startGame() {
-  if (gameRunning) return;
+  if (gameRunning) {
+    restartGame();
+    return;
+  }
 
   snake = [{ x: 10, y: 10 }];
   direction = "right";
@@ -128,6 +131,26 @@ function startGame() {
   startButton.textContent = "Restart Game";
 
   pauseButton.classList.remove("hidden");
+
+  gameInterval = setInterval(gameLoop, GAME_SPEED);
+
+  updateDisplay();
+}
+
+function restartGame() {
+  clearInterval(gameInterval);
+
+  snake = [{ x: 10, y: 10 }];
+  direction = "right";
+  nextDirection = "right";
+  score = 0;
+
+  generateFood();
+
+  gameRunning = true;
+  gamePaused = false;
+
+  pauseButton.textContent = "Pause";
 
   gameInterval = setInterval(gameLoop, GAME_SPEED);
 
@@ -171,6 +194,21 @@ function endGame() {
 }
 
 function handleKeyPress(event) {
+  if (event.key === " ") {
+    event.preventDefault();
+    if (!gameRunning) {
+      startGame();
+    } else {
+      togglePause();
+    }
+    return;
+  }
+
+  if (event.key === "r") {
+    event.preventDefault();
+    restartGame();
+  }
+
   if (gamePaused) return;
 
   switch (event.key) {
@@ -185,9 +223,6 @@ function handleKeyPress(event) {
       break;
     case "ArrowRight":
       if (direction !== "left") nextDirection = "right";
-      break;
-    case " ": 
-      if (gameRunning) togglePause();
       break;
   }
 }
