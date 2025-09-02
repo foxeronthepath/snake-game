@@ -159,11 +159,16 @@ function checkCollision() {
 }
 
 function moveSnake() {
-  // Use autopilot if enabled
+  // Use autopilot if enabled (check both types)
   if (autopilot.isEnabled()) {
     const autopilotDirection = autopilot.getNextDirection(snake, food, direction, GRID_SIZE);
     if (autopilotDirection) {
       nextDirection = autopilotDirection;
+    }
+  } else if (lawnmowerAutopilot.isEnabled()) {
+    const lawnmowerDirection = lawnmowerAutopilot.getNextDirection(snake, food, direction, GRID_SIZE);
+    if (lawnmowerDirection) {
+      nextDirection = lawnmowerDirection;
     }
   }
   
@@ -229,8 +234,9 @@ function startGame(isRestart = false) {
   pauseButton.textContent = "Pause";
   pauseButton.classList.remove("hidden");
 
-  // Reset autopilot when starting new game
+  // Reset both autopilots when starting new game
   autopilot.reset();
+  lawnmowerAutopilot.reset();
 
   gameInterval = setInterval(gameLoop, GAME_SPEED);
 
@@ -275,8 +281,9 @@ function endGame() {
   pauseButton.textContent = "Pause";
   startButton.textContent = "Start Game";
 
-  // Reset autopilot when game ends
+  // Reset both autopilots when game ends
   autopilot.reset();
+  lawnmowerAutopilot.reset();
 
   showGameOverModal(score);
 }
@@ -334,7 +341,23 @@ function handleKeyPress(event) {
     case "A":
       event.preventDefault();
       if (gameRunning) {
+        // Disable lawnmower autopilot if it's active
+        if (lawnmowerAutopilot.isActive()) {
+          lawnmowerAutopilot.toggle();
+        }
         autopilot.toggle();
+      }
+      return;
+      
+    case "p":
+    case "P":
+      event.preventDefault();
+      if (gameRunning) {
+        // Disable smart autopilot if it's active
+        if (autopilot.isActive()) {
+          autopilot.toggle();
+        }
+        lawnmowerAutopilot.toggle();
       }
       return;
   }
@@ -372,8 +395,9 @@ function init() {
   themeToggle.addEventListener("change", toggleTheme);
   document.addEventListener("keydown", handleKeyPress);
 
-  // Initialize autopilot display
+  // Initialize both autopilot displays
   autopilot.updateDisplay();
+  lawnmowerAutopilot.updateDisplay();
 
   loadThemePreference();
 }

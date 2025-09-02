@@ -57,6 +57,8 @@ body {
   margin-bottom: 10px;
 }
 
+
+
 .score {
   font-size: 24px;
   font-weight: bold;
@@ -64,13 +66,6 @@ body {
   color: #e23500;
 }
 
-.autopilot-status {
-  font-size: 16px;
-  font-weight: bold;
-  margin-bottom: 10px;
-  color: #666;
-  transition: color 0.3s;
-}
 
 .grid {
   display: grid;
@@ -137,10 +132,20 @@ body {
   text-align: center;
 }
 
-.controls p {
-  margin-bottom: 15px;
-  font-size: 16px;
+.control-hints {
+  margin-top: 15px;
+}
+
+.control-hints p {
+  margin-bottom: 8px;
+  font-size: 14px;
   color: var(--text-color);
+  opacity: 0.8;
+}
+
+.control-hints strong {
+  color: #e23500;
+  font-weight: bold;
 }
 
 .buttons {

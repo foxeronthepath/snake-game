@@ -387,5 +387,372 @@ class SmartSnakeAutopilot {
   }
 }
 
-// Create global autopilot instance
+// Lawnmower Autopilot - Based on Python systematic pattern implementation
+class LawnmowerAutopilot {
+  constructor() {
+    this.active = false;
+    this.patternPhase = "eat_first_food"; // eat_first_food, go_to_start, moving_right, moving_left, going_up, complete_top_row
+    this.currentRow = 0;
+    this.movingRight = true;
+    this.startPosition = { x: 18, y: 0 }; // GRID_WIDTH - 2, 0
+    this.firstFoodEaten = false;
+    this.initialSnakeLength = 0;
+    this.speedLevel = 1.0;
+    this.directions = {
+      UP: "up",
+      DOWN: "down", 
+      LEFT: "left",
+      RIGHT: "right"
+    };
+    this.directionValues = {
+      [this.directions.UP]: { x: 0, y: -1 },
+      [this.directions.DOWN]: { x: 0, y: 1 },
+      [this.directions.LEFT]: { x: -1, y: 0 },
+      [this.directions.RIGHT]: { x: 1, y: 0 }
+    };
+  }
+
+  toggle() {
+    this.active = !this.active;
+    this.updateDisplay();
+    if (this.active) {
+      this.resetPattern();
+      console.log("Lawnmower autopilot activated! Using systematic pattern...");
+    } else {
+      console.log("Lawnmower autopilot deactivated!");
+    }
+    return this.active;
+  }
+
+  resetPattern() {
+    this.patternPhase = "eat_first_food";
+    this.currentRow = 0;
+    this.movingRight = true;
+    this.firstFoodEaten = false;
+    this.initialSnakeLength = 0;
+    this.speedLevel = 1.0;
+  }
+
+  isActive() {
+    return this.active;
+  }
+
+  isEnabled() {
+    return this.active;
+  }
+
+  reset() {
+    this.active = false;
+    this.updateDisplay();
+  }
+
+  updateDisplay() {
+    const autopilotStatus = document.getElementById("lawnmower-status");
+    if (autopilotStatus) {
+      autopilotStatus.textContent = this.active ? "LAWNMOWER AUTOPILOT: ON" : "LAWNMOWER AUTOPILOT: OFF";
+      autopilotStatus.style.color = this.active ? "#ff6b35" : "#666";
+    }
+  }
+
+  // Calculate speed level based on score
+  calculateSpeedLevel(currentScore) {
+    this.speedLevel = 1.0 + (currentScore / 1000); // Increase speed gradually
+    return this.speedLevel;
+  }
+
+  getNextDirection(snake, food, currentDirection, gridSize) {
+    if (!this.active) {
+      return null;
+    }
+
+    const head = snake[0];
+    const body = new Set(snake.slice(1).map(seg => `${seg.x},${seg.y}`));
+    
+    // Track initial snake length
+    if (this.initialSnakeLength === 0) {
+      this.initialSnakeLength = snake.length;
+    }
+
+    // Check if snake has grown (food was eaten)
+    if (!this.firstFoodEaten && snake.length > this.initialSnakeLength) {
+      this.firstFoodEaten = true;
+      console.log("First food eaten! Starting intelligent pathfinding...");
+    }
+
+    // Update speed level based on score
+    const currentScore = (snake.length - this.initialSnakeLength) * 10;
+    this.calculateSpeedLevel(currentScore);
+
+    // Use intelligent pathfinding until 1.30x speed, then switch to fixed pattern
+    if (this.speedLevel < 1.30) {
+      return this._chaseFood(head, body, food, gridSize);
+    } else {
+      // Use fixed lawnmower pattern for high speeds
+      if (this.speedLevel >= 1.30 && this.patternPhase === "eat_first_food") {
+        console.log(`Speed reached ${this.speedLevel.toFixed(2)}x! Switching to fixed lawnmower pattern...`);
+        this.patternPhase = "go_to_start";
+      }
+
+      switch (this.patternPhase) {
+        case "eat_first_food":
+          return this._eatFirstFood(head, body, food, gridSize);
+        case "go_to_start":
+          return this._goToStartPosition(head, body, gridSize);
+        case "moving_right":
+          return this._moveRightPattern(head, body, gridSize);
+        case "moving_left":
+          return this._moveLeftPattern(head, body, gridSize);
+        case "going_up":
+          return this._goUpPattern(head, body, gridSize);
+        case "complete_top_row":
+          return this._completeTopRow(head, body, gridSize);
+      }
+    }
+
+    return this._getSafeDirection(head, body, gridSize);
+  }
+
+  _eatFirstFood(head, body, food, gridSize) {
+    // If we've already eaten the first food, go to start position
+    if (this.firstFoodEaten) {
+      this.patternPhase = "go_to_start";
+      return this._goToStartPosition(head, body, gridSize);
+    }
+
+    // Check if we're at the food position
+    if (head.x === food.x && head.y === food.y) {
+      this.firstFoodEaten = true;
+      this.patternPhase = "go_to_start";
+      return this._goToStartPosition(head, body, gridSize);
+    }
+
+    // Simple pathfinding to food
+    const dx = food.x - head.x;
+    const dy = food.y - head.y;
+
+    // Move horizontally first
+    if (dx !== 0) {
+      if (dx > 0) {
+        const newPos = { x: head.x + 1, y: head.y };
+        if (this._isPositionSafe(newPos, body, gridSize)) {
+          return this.directions.RIGHT;
+        }
+      } else {
+        const newPos = { x: head.x - 1, y: head.y };
+        if (this._isPositionSafe(newPos, body, gridSize)) {
+          return this.directions.LEFT;
+        }
+      }
+    }
+
+    // Move vertically
+    if (dy !== 0) {
+      if (dy > 0) {
+        const newPos = { x: head.x, y: head.y + 1 };
+        if (this._isPositionSafe(newPos, body, gridSize)) {
+          return this.directions.DOWN;
+        }
+      } else {
+        const newPos = { x: head.x, y: head.y - 1 };
+        if (this._isPositionSafe(newPos, body, gridSize)) {
+          return this.directions.UP;
+        }
+      }
+    }
+
+    return this._getSafeDirection(head, body, gridSize);
+  }
+
+  _goToStartPosition(head, body, gridSize) {
+    // Update start position based on grid size
+    this.startPosition = { x: gridSize - 2, y: 0 };
+    
+    // If we're already at the start position, begin the pattern
+    if (head.x === this.startPosition.x && head.y === 0) {
+      this.patternPhase = "moving_left";
+      this.movingRight = false;
+      return this.directions.LEFT;
+    }
+
+    // Move right if we're not at the start position
+    if (head.x < this.startPosition.x) {
+      const newPos = { x: head.x + 1, y: head.y };
+      if (this._isPositionSafe(newPos, body, gridSize)) {
+        return this.directions.RIGHT;
+      }
+    }
+
+    // Move up if we're not at the top
+    if (head.y > 0) {
+      const newPos = { x: head.x, y: head.y - 1 };
+      if (this._isPositionSafe(newPos, body, gridSize)) {
+        return this.directions.UP;
+      }
+    }
+
+    return this._getSafeDirection(head, body, gridSize);
+  }
+
+  _moveRightPattern(head, body, gridSize) {
+    // If we're one space before the right edge, go down
+    if (head.x >= gridSize - 2) {
+      const newPos = { x: head.x, y: head.y + 1 };
+      if (this._isPositionSafe(newPos, body, gridSize)) {
+        this.patternPhase = "moving_left";
+        this.movingRight = false;
+        return this.directions.DOWN;
+      } else {
+        // If we can't go down and we're at the bottom, start going up
+        if (head.y >= gridSize - 1) {
+          this.patternPhase = "going_up";
+          return this._goUpPattern(head, body, gridSize);
+        }
+      }
+    }
+
+    // Move right
+    const newPos = { x: head.x + 1, y: head.y };
+    if (this._isPositionSafe(newPos, body, gridSize)) {
+      return this.directions.RIGHT;
+    }
+
+    return this._getSafeDirection(head, body, gridSize);
+  }
+
+  _moveLeftPattern(head, body, gridSize) {
+    // If we're at the left edge, go down
+    if (head.x <= 0) {
+      const newPos = { x: head.x, y: head.y + 1 };
+      if (this._isPositionSafe(newPos, body, gridSize)) {
+        this.patternPhase = "moving_right";
+        this.movingRight = true;
+        return this.directions.DOWN;
+      } else {
+        // If we can't go down and we're at the bottom, start going up
+        if (head.y >= gridSize - 1) {
+          this.patternPhase = "going_up";
+          return this._goUpPattern(head, body, gridSize);
+        }
+      }
+    }
+
+    // Move left
+    const newPos = { x: head.x - 1, y: head.y };
+    if (this._isPositionSafe(newPos, body, gridSize)) {
+      return this.directions.LEFT;
+    }
+
+    return this._getSafeDirection(head, body, gridSize);
+  }
+
+  _goUpPattern(head, body, gridSize) {
+    // If we're at the top, complete the top row
+    if (head.y <= 0) {
+      this.patternPhase = "complete_top_row";
+      return this._completeTopRow(head, body, gridSize);
+    }
+
+    // If we're not at the rightmost free column, move right first
+    if (head.x < gridSize - 1) {
+      const newPos = { x: head.x + 1, y: head.y };
+      if (this._isPositionSafe(newPos, body, gridSize)) {
+        return this.directions.RIGHT;
+      }
+    }
+
+    // Move up along the rightmost column
+    const newPos = { x: head.x, y: head.y - 1 };
+    if (this._isPositionSafe(newPos, body, gridSize)) {
+      return this.directions.UP;
+    }
+
+    return this._getSafeDirection(head, body, gridSize);
+  }
+
+  _completeTopRow(head, body, gridSize) {
+    // If we're at the left edge of the top row, continue the normal pattern
+    if (head.x <= 0) {
+      // After completing top row, continue normal pattern: go down and then right
+      const newPos = { x: head.x, y: head.y + 1 };
+      if (this._isPositionSafe(newPos, body, gridSize)) {
+        this.patternPhase = "moving_right";
+        this.movingRight = true;
+        return this.directions.DOWN;
+      }
+    }
+
+    // Move left to complete the top row
+    const newPos = { x: head.x - 1, y: head.y };
+    if (this._isPositionSafe(newPos, body, gridSize)) {
+      return this.directions.LEFT;
+    }
+
+    return this._getSafeDirection(head, body, gridSize);
+  }
+
+  _chaseFood(head, body, food, gridSize) {
+    // Calculate distance to food
+    const dx = food.x - head.x;
+    const dy = food.y - head.y;
+
+    // Simple pathfinding: move horizontally first, then vertically
+    if (dx !== 0) {
+      if (dx > 0) {
+        const newPos = { x: head.x + 1, y: head.y };
+        if (this._isPositionSafe(newPos, body, gridSize)) {
+          return this.directions.RIGHT;
+        }
+      } else {
+        const newPos = { x: head.x - 1, y: head.y };
+        if (this._isPositionSafe(newPos, body, gridSize)) {
+          return this.directions.LEFT;
+        }
+      }
+    }
+
+    // Move vertically if there's a vertical difference
+    if (dy !== 0) {
+      if (dy > 0) {
+        const newPos = { x: head.x, y: head.y + 1 };
+        if (this._isPositionSafe(newPos, body, gridSize)) {
+          return this.directions.DOWN;
+        }
+      } else {
+        const newPos = { x: head.x, y: head.y - 1 };
+        if (this._isPositionSafe(newPos, body, gridSize)) {
+          return this.directions.UP;
+        }
+      }
+    }
+
+    return this._getSafeDirection(head, body, gridSize);
+  }
+
+  _isPositionSafe(pos, body, gridSize) {
+    return (pos.x >= 0 && pos.x < gridSize && 
+            pos.y >= 0 && pos.y < gridSize && 
+            !body.has(`${pos.x},${pos.y}`));
+  }
+
+  _getSafeDirection(head, body, gridSize) {
+    const directions = [
+      { dir: this.directions.UP, delta: { x: 0, y: -1 } },
+      { dir: this.directions.DOWN, delta: { x: 0, y: 1 } },
+      { dir: this.directions.LEFT, delta: { x: -1, y: 0 } },
+      { dir: this.directions.RIGHT, delta: { x: 1, y: 0 } }
+    ];
+
+    for (const dirObj of directions) {
+      const newPos = { x: head.x + dirObj.delta.x, y: head.y + dirObj.delta.y };
+      if (this._isPositionSafe(newPos, body, gridSize)) {
+        return dirObj.dir;
+      }
+    }
+
+    return null;
+  }
+}
+
+// Create global autopilot instances
 const autopilot = new SmartSnakeAutopilot();
+const lawnmowerAutopilot = new LawnmowerAutopilot();
