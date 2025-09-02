@@ -1,11 +1,11 @@
-const GRID_SIZE = 20;
+const GRID_SIZE = 10;
 const CELL_SIZE = 20;
 let score = 0;
 const SPEED_LEVELS = [300, 200, 150, 100, 50, 25, 10, 5, 1]; // speed levels from slowest to fastest
 const DEFAULT_SPEED_INDEX = 2; // Index for 150ms (default)
 let currentSpeedIndex = DEFAULT_SPEED_INDEX;
 let currentSpeed = SPEED_LEVELS[currentSpeedIndex];
-const INITIAL_POSITION = { x: 10, y: 10 };
+const INITIAL_POSITION = { x: 5, y: 5 };
 const DIRECTIONS = {
   UP: "up",
   DOWN: "down",
@@ -39,39 +39,63 @@ function toggleTheme() {
 }
 
 function increaseSpeed() {
-  console.log(`🚀 increaseSpeed() called! Current index: ${currentSpeedIndex}, speed: ${currentSpeed}ms`);
+  console.log(
+    `🚀 increaseSpeed() called! Current index: ${currentSpeedIndex}, speed: ${currentSpeed}ms`
+  );
   if (currentSpeedIndex < SPEED_LEVELS.length - 1) {
     const oldSpeed = currentSpeed;
     const oldIndex = currentSpeedIndex;
     currentSpeedIndex++;
     currentSpeed = SPEED_LEVELS[currentSpeedIndex];
-    console.log(`🚀 Speed level changed from ${oldIndex}(${oldSpeed}ms) to ${currentSpeedIndex}(${currentSpeed}ms)`);
+    console.log(
+      `🚀 Speed level changed from ${oldIndex}(${oldSpeed}ms) to ${currentSpeedIndex}(${currentSpeed}ms)`
+    );
     updateGameSpeed();
-    console.log(`🚀 Speed increased! Level ${currentSpeedIndex + 1}/${SPEED_LEVELS.length}: ${currentSpeed}ms`);
+    console.log(
+      `🚀 Speed increased! Level ${currentSpeedIndex + 1}/${
+        SPEED_LEVELS.length
+      }: ${currentSpeed}ms`
+    );
   } else {
-    console.log(`🚀 Cannot increase speed - already at fastest level: ${currentSpeed}ms`);
+    console.log(
+      `🚀 Cannot increase speed - already at fastest level: ${currentSpeed}ms`
+    );
   }
 }
 
 function decreaseSpeed() {
-  console.log(`🐌 decreaseSpeed() called! Current index: ${currentSpeedIndex}, speed: ${currentSpeed}ms`);
+  console.log(
+    `🐌 decreaseSpeed() called! Current index: ${currentSpeedIndex}, speed: ${currentSpeed}ms`
+  );
   if (currentSpeedIndex > 0) {
     const oldSpeed = currentSpeed;
     const oldIndex = currentSpeedIndex;
     currentSpeedIndex--;
     currentSpeed = SPEED_LEVELS[currentSpeedIndex];
-    console.log(`🐌 Speed level changed from ${oldIndex}(${oldSpeed}ms) to ${currentSpeedIndex}(${currentSpeed}ms)`);
+    console.log(
+      `🐌 Speed level changed from ${oldIndex}(${oldSpeed}ms) to ${currentSpeedIndex}(${currentSpeed}ms)`
+    );
     updateGameSpeed();
-    console.log(`🐌 Speed decreased! Level ${currentSpeedIndex + 1}/${SPEED_LEVELS.length}: ${currentSpeed}ms`);
+    console.log(
+      `🐌 Speed decreased! Level ${currentSpeedIndex + 1}/${
+        SPEED_LEVELS.length
+      }: ${currentSpeed}ms`
+    );
   } else {
-    console.log(`🐌 Cannot decrease speed - already at slowest level: ${currentSpeed}ms`);
+    console.log(
+      `🐌 Cannot decrease speed - already at slowest level: ${currentSpeed}ms`
+    );
   }
 }
 
 function updateGameSpeed() {
-  console.log(`⚙️ updateGameSpeed() called! gameRunning: ${gameRunning}, gamePaused: ${gamePaused}, currentSpeed: ${currentSpeed}ms`);
+  console.log(
+    `⚙️ updateGameSpeed() called! gameRunning: ${gameRunning}, gamePaused: ${gamePaused}, currentSpeed: ${currentSpeed}ms`
+  );
   if (gameRunning && !gamePaused) {
-    console.log(`⚙️ Clearing old interval and setting new one with ${currentSpeed}ms`);
+    console.log(
+      `⚙️ Clearing old interval and setting new one with ${currentSpeed}ms`
+    );
     clearInterval(gameInterval);
     gameInterval = setInterval(gameLoop, currentSpeed);
     console.log(`⚙️ New game interval set successfully`);
@@ -95,8 +119,12 @@ function initializeGrid() {
 
 function generateFood() {
   let newFood;
+  let attempts = 0;
+  const totalCells = GRID_SIZE * GRID_SIZE;
+  const emptyCells = totalCells - snake.length;
 
   do {
+    attempts++;
     newFood = {
       x: Math.floor(Math.random() * GRID_SIZE),
       y: Math.floor(Math.random() * GRID_SIZE),
@@ -108,7 +136,7 @@ function generateFood() {
   food = newFood;
 }
 
-function updateDisplay() {
+function updateDisplay(skipFood = false) {
   clearGameElements();
 
   drawSnakeBody();
@@ -117,7 +145,9 @@ function updateDisplay() {
     drawSnakeHead();
   }
 
-  drawFood();
+  if (!skipFood) {
+    drawFood();
+  }
 
   scoreElement.textContent = score;
 }
@@ -206,17 +236,27 @@ function checkCollision() {
 function moveSnake() {
   // Use autopilot if enabled (check both types)
   if (autopilot.isEnabled()) {
-    const autopilotDirection = autopilot.getNextDirection(snake, food, direction, GRID_SIZE);
+    const autopilotDirection = autopilot.getNextDirection(
+      snake,
+      food,
+      direction,
+      GRID_SIZE
+    );
     if (autopilotDirection) {
       nextDirection = autopilotDirection;
     }
   } else if (lawnmowerAutopilot.isEnabled()) {
-    const lawnmowerDirection = lawnmowerAutopilot.getNextDirection(snake, food, direction, GRID_SIZE);
+    const lawnmowerDirection = lawnmowerAutopilot.getNextDirection(
+      snake,
+      food,
+      direction,
+      GRID_SIZE
+    );
     if (lawnmowerDirection) {
       nextDirection = lawnmowerDirection;
     }
   }
-  
+
   direction = nextDirection;
 
   const head = { ...snake[0] };
@@ -239,13 +279,31 @@ function moveSnake() {
 
   if (head.x === food.x && head.y === food.y) {
     score += 10;
-    generateFood();
-    
-    // Check for winning condition: snake covers all grid except 1 cell (for food)
+
+    // Check for winning condition: if snake would cover all cells after eating
     if (snake.length === GRID_SIZE * GRID_SIZE - 1) {
+      // Find the last empty cell and place food there
+      let foundEmptyCell = false;
+      for (let y = 0; y < GRID_SIZE && !foundEmptyCell; y++) {
+        for (let x = 0; x < GRID_SIZE; x++) {
+          const isOccupied = snake.some(
+            (segment) => segment.x === x && segment.y === y
+          );
+          if (!isOccupied) {
+            food = { x, y }; // Place food in the last empty cell
+            foundEmptyCell = true;
+            break;
+          }
+        }
+      }
+
+      updateDisplay(); // Show the final winning state with food in last empty cell
       endGame(true); // Pass true to indicate winning
+      console.log("🎉 YOU WIN! 🎉");
       return;
     }
+
+    generateFood();
   } else {
     snake.pop();
   }
@@ -291,7 +349,11 @@ function startGame(isRestart = false) {
   autopilot.reset();
   lawnmowerAutopilot.reset();
 
-  console.log(`🎮 Game started with speed level ${currentSpeedIndex + 1}/${SPEED_LEVELS.length}: ${currentSpeed}ms (Available levels: ${SPEED_LEVELS.join(', ')}ms)`);
+  console.log(
+    `🎮 Game started with speed level ${currentSpeedIndex + 1}/${
+      SPEED_LEVELS.length
+    }: ${currentSpeed}ms (Available levels: ${SPEED_LEVELS.join(", ")}ms)`
+  );
   gameInterval = setInterval(gameLoop, currentSpeed);
 
   updateDisplay();
@@ -346,7 +408,7 @@ function showGameOverModal(finalScore, isWin = false) {
   const modal = document.getElementById("game-over-modal");
   const modalTitle = modal.querySelector("h2");
   const scoreText = document.getElementById("final-score");
-  
+
   if (isWin) {
     modalTitle.textContent = "🎉 YOU WIN! 🎉";
     scoreText.textContent = `Congratulations!\nFinal score: ${finalScore}`;
@@ -356,7 +418,7 @@ function showGameOverModal(finalScore, isWin = false) {
     scoreText.textContent = `Your score: ${finalScore}`;
     scoreText.style.whiteSpace = "normal";
   }
-  
+
   modal.classList.remove("hidden");
 }
 
@@ -376,7 +438,6 @@ window.addEventListener("load", () => {
 });
 
 function handleKeyPress(event) {
-  console.log(`🔑 Key pressed: "${event.key}" (code: ${event.code})`);
   const modal = document.getElementById("game-over-modal");
   const isModalVisible = !modal.classList.contains("hidden");
 
@@ -396,13 +457,13 @@ function handleKeyPress(event) {
       hideGameOverModal();
       restartGame();
       return;
-      
+
     case "t":
     case "T":
       event.preventDefault();
       toggleTheme();
       return;
-      
+
     case "a":
     case "A":
       event.preventDefault();
@@ -414,7 +475,7 @@ function handleKeyPress(event) {
         autopilot.toggle();
       }
       return;
-      
+
     case "p":
     case "P":
       event.preventDefault();
@@ -426,15 +487,13 @@ function handleKeyPress(event) {
         lawnmowerAutopilot.toggle();
       }
       return;
-      
+
     case ",":
-      console.log(`🔑 Comma key detected!`);
       event.preventDefault();
       decreaseSpeed();
       return;
-      
+
     case ".":
-      console.log(`🔑 Period key detected!`);
       event.preventDefault();
       increaseSpeed();
       return;
@@ -442,7 +501,6 @@ function handleKeyPress(event) {
 
   if (gamePaused) return;
   if (!gameRunning) return;
-
 
   switch (event.key) {
     case "ArrowUp":

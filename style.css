@@ -69,8 +69,8 @@ body {
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(20, 30px);
-  grid-template-rows: repeat(20, 30px);
+  grid-template-columns: repeat(10, 30px);
+  grid-template-rows: repeat(10, 30px);
   border: 2px solid var(--grid-border);
   background-color: var(--grid-bg);
   transition: background-color 0.3s, border-color 0.3s;

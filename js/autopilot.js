@@ -52,26 +52,10 @@ class SmartSnakeAutopilot {
       autopilotStatus.style.color = this.active ? "#00c206" : "#666";
     }
     
-    // Update page title to show autopilot status
-    this.updatePageTitle();
-    
     // If status element doesn't exist, log to console instead
     if (!autopilotStatus && this.active) {
       console.log("Smart Autopilot: ACTIVATED");
     }
-  }
-
-  updatePageTitle() {
-    const lawnmowerActive = window.lawnmowerAutopilot && window.lawnmowerAutopilot.isActive();
-    let title = "Snake Game";
-    
-    if (this.active) {
-      title = "🧠 Snake Game (Smart AI)";
-    } else if (lawnmowerActive) {
-      title = "🤖 Snake Game (Lawnmower AI)";
-    }
-    
-    document.title = title;
   }
 
   // Main entry point for getting next direction using smart algorithms
@@ -474,27 +458,12 @@ class LawnmowerAutopilot {
       autopilotStatus.style.color = this.active ? "#ff6b35" : "#666";
     }
     
-    // Update page title to show autopilot status
-    this.updatePageTitle();
-    
     // If status element doesn't exist, log to console instead
     if (!autopilotStatus && this.active) {
       console.log("Lawnmower Autopilot: ACTIVATED");
     }
   }
 
-  updatePageTitle() {
-    const smartActive = window.autopilot && window.autopilot.isActive();
-    let title = "Snake Game";
-    
-    if (this.active) {
-      title = "🤖 Snake Game (Lawnmower AI)";
-    } else if (smartActive) {
-      title = "🧠 Snake Game (Smart AI)";
-    }
-    
-    document.title = title;
-  }
 
   // Calculate speed level based on score
   calculateSpeedLevel(currentScore) {
