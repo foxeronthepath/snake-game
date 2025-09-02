@@ -86,11 +86,19 @@ The game features 9 distinct speed levels you can cycle through:
 
 ```
 snake-game/
-├── index.html          # Main HTML file
+├── index.html          # Main HTML file with embedded game UI
 ├── js/
-│   ├── script.js       # Core game logic
-│   └── autopilot.js    # AI autopilot systems
-├── style.css           # Styling and animations
+│   ├── script.js       # Core game logic and controls
+│   ├── autopilot.js    # AI autopilot systems (A* & Lawnmower)
+│   └── audio.js        # Audio system management
+├── sounds/
+│   ├── background.wav  # Background music (loops)
+│   ├── eat.wav         # Food eating sound effect
+│   ├── death.wav       # Game over sound effect
+│   ├── win.wav         # Victory sound effect
+│   └── README.md       # Audio system documentation
+├── style.css           # Styling, animations, and themes
+├── logo.png            # Game logo/icon
 └── README.md           # This file
 ```
 
