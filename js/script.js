@@ -50,6 +50,14 @@ function toggleHelp() {
     helpButton.textContent = "Help";
   } else {
     helpButton.textContent = "Hide Help";
+    
+    setTimeout(() => {
+      controlHints.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'nearest',
+        inline: 'nearest'
+      });
+    },50); // Small delay to allow the element to become visible first
   }
 }
 
