@@ -1,8 +1,8 @@
 const GRID_SIZE = 20;
 const CELL_SIZE = 20;
 let score = 0;
-const SPEED_LEVELS = [300, 200, 150, 100, 50, 25, 10, 5, 1]; // speed levels from slowest to fastest
-const DEFAULT_SPEED_INDEX = 2; // Index for 150ms (default)
+const SPEED_LEVELS = [300, 200, 150, 100, 50, 25, 10, 5, 1]; 
+const DEFAULT_SPEED_INDEX = 2; 
 let currentSpeedIndex = DEFAULT_SPEED_INDEX;
 let currentSpeed = SPEED_LEVELS[currentSpeedIndex];
 const INITIAL_POSITION = { x: 10, y: 10 };
@@ -45,7 +45,6 @@ function toggleTheme() {
 function toggleHelp() {
   controlHints.classList.toggle("hidden");
 
-  // Update button text based on visibility
   if (controlHints.classList.contains("hidden")) {
     helpButton.textContent = "Help";
   } else {
@@ -57,14 +56,13 @@ function toggleHelp() {
         block: 'nearest',
         inline: 'nearest'
       });
-    },50); // Small delay to allow the element to become visible first
+    },50); 
   }
 }
 
 function toggleBorderMode() {
   borderWrapMode = !borderWrapMode;
   
-  // Update button appearance and text
   if (borderWrapMode) {
     borderModeButton.textContent = "No Borders";
     borderModeButton.classList.add("wrap-mode");
@@ -75,25 +73,20 @@ function toggleBorderMode() {
     borderModeButton.title = "Border Wrap Mode OFF - Snake dies at edges";
   }
   
-  // Automatically switch autopilots based on border mode
   switchAutopilotForBorderMode();
   
-  // Save preference to localStorage
   localStorage.setItem("snakeBorderWrapMode", borderWrapMode.toString());
   
   console.log(`🌀 Border wrap mode ${borderWrapMode ? 'enabled' : 'disabled'}`);
 }
 
 function switchAutopilotForBorderMode() {
-  // Only switch if smart autopilots (A) are active, not lawnmower (P)
   const wasSmartAutopilotActive = autopilot.isActive() || borderlessAutopilot.isActive();
   
   if (wasSmartAutopilotActive) {
-    // Deactivate smart autopilots only (leave lawnmower alone)
     if (autopilot.isActive()) autopilot.toggle();
     if (borderlessAutopilot.isActive()) borderlessAutopilot.toggle();
     
-    // Activate the appropriate smart autopilot for the current border mode
     if (borderWrapMode) {
       borderlessAutopilot.toggle();
       console.log("🔄 Switched to borderless autopilot for wrap mode");
@@ -103,7 +96,6 @@ function switchAutopilotForBorderMode() {
     }
   }
   
-  // If lawnmower autopilot is active, leave it alone and just log
   if (lawnmowerAutopilot.isActive()) {
     console.log("🚜 Lawnmower autopilot remains active - border mode change ignored");
   }
@@ -186,6 +178,7 @@ function initializeGrid() {
       gridElement.appendChild(cell);
     }
   }
+  updateDisplayStart()
 }
 
 function generateFood() {
@@ -222,6 +215,17 @@ function updateDisplay(skipFood = false) {
 
   scoreElement.textContent = score;
 }
+
+function updateDisplayStart() {
+  clearGameElements();
+
+  drawSnakeBody();
+
+  if (snake.length > 0) {
+    drawSnakeHead();
+  }
+}
+
 
 function clearGameElements() {
   document
@@ -708,7 +712,6 @@ function init() {
   themeToggle.addEventListener("change", toggleTheme);
   document.addEventListener("keydown", handleKeyPress);
 
-  // Initialize all autopilot displays
   autopilot.updateDisplay();
   borderlessAutopilot.updateDisplay();
   lawnmowerAutopilot.updateDisplay();
