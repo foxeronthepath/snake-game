@@ -3,7 +3,7 @@
 A modern Snake game with multiple AI autopilot modes and border wrap functionality built with HTML5, CSS3, and JavaScript.
 
 <div align="center">
-  <img src="assets/snake-game-preview.gif" alt="Snake Game Preview">
+   <!-- <img src="assets/snake-game-preview.gif" alt="Snake Game Preview"> -->
 
 **🎮 [Play the Game Live!](https://foxeronthepath.github.io/snake-game/)**
 
