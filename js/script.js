@@ -67,10 +67,38 @@ function toggleBorderMode() {
     borderModeButton.title = "Border Wrap Mode OFF - Snake dies at edges";
   }
   
+  // Automatically switch autopilots based on border mode
+  switchAutopilotForBorderMode();
+  
   // Save preference to localStorage
   localStorage.setItem("snakeBorderWrapMode", borderWrapMode.toString());
   
   console.log(`🌀 Border wrap mode ${borderWrapMode ? 'enabled' : 'disabled'}`);
+}
+
+function switchAutopilotForBorderMode() {
+  // Only switch if smart autopilots (A) are active, not lawnmower (P)
+  const wasSmartAutopilotActive = autopilot.isActive() || borderlessAutopilot.isActive();
+  
+  if (wasSmartAutopilotActive) {
+    // Deactivate smart autopilots only (leave lawnmower alone)
+    if (autopilot.isActive()) autopilot.toggle();
+    if (borderlessAutopilot.isActive()) borderlessAutopilot.toggle();
+    
+    // Activate the appropriate smart autopilot for the current border mode
+    if (borderWrapMode) {
+      borderlessAutopilot.toggle();
+      console.log("🔄 Switched to borderless autopilot for wrap mode");
+    } else {
+      autopilot.toggle();
+      console.log("🔄 Switched to normal autopilot for border mode");
+    }
+  }
+  
+  // If lawnmower autopilot is active, leave it alone and just log
+  if (lawnmowerAutopilot.isActive()) {
+    console.log("🚜 Lawnmower autopilot remains active - border mode change ignored");
+  }
 }
 
 function increaseSpeed() {
@@ -273,8 +301,18 @@ function checkCollision() {
 }
 
 function moveSnake() {
-  // Use autopilot if enabled (check both types)
-  if (autopilot.isEnabled()) {
+  // Use autopilot based on border mode and what's active
+  if (borderlessAutopilot.isEnabled()) {
+    const borderlessDirection = borderlessAutopilot.getNextDirection(
+      snake,
+      food,
+      direction,
+      GRID_SIZE
+    );
+    if (borderlessDirection) {
+      nextDirection = borderlessDirection;
+    }
+  } else if (autopilot.isEnabled()) {
     const autopilotDirection = autopilot.getNextDirection(
       snake,
       food,
@@ -415,8 +453,9 @@ function startGame(isRestart = false) {
   pauseButton.textContent = "Pause";
   pauseButton.classList.remove("hidden");
 
-  // Reset both autopilots when starting new game
+  // Reset all autopilots when starting new game
   autopilot.reset();
+  borderlessAutopilot.reset();
   lawnmowerAutopilot.reset();
 
   console.log(
@@ -488,8 +527,9 @@ function endGame(isWin = false) {
     audioManager.stopBackgroundMusic();
   }
 
-  // Reset both autopilots when game ends
+  // Reset all autopilots when game ends
   autopilot.reset();
+  borderlessAutopilot.reset();
   lawnmowerAutopilot.reset();
 
   showGameOverModal(score, isWin);
@@ -563,7 +603,21 @@ function handleKeyPress(event) {
         if (lawnmowerAutopilot.isActive()) {
           lawnmowerAutopilot.toggle();
         }
-        autopilot.toggle();
+        
+        // Choose appropriate autopilot based on border mode
+        if (borderWrapMode) {
+          // Disable normal autopilot if active
+          if (autopilot.isActive()) {
+            autopilot.toggle();
+          }
+          borderlessAutopilot.toggle();
+        } else {
+          // Disable borderless autopilot if active
+          if (borderlessAutopilot.isActive()) {
+            borderlessAutopilot.toggle();
+          }
+          autopilot.toggle();
+        }
       }
       return;
 
@@ -571,9 +625,12 @@ function handleKeyPress(event) {
     case "P":
       event.preventDefault();
       if (gameRunning) {
-        // Disable smart autopilot if it's active
+        // Disable smart autopilots if they're active
         if (autopilot.isActive()) {
           autopilot.toggle();
+        }
+        if (borderlessAutopilot.isActive()) {
+          borderlessAutopilot.toggle();
         }
         lawnmowerAutopilot.toggle();
       }
@@ -643,8 +700,9 @@ function init() {
   themeToggle.addEventListener("change", toggleTheme);
   document.addEventListener("keydown", handleKeyPress);
 
-  // Initialize both autopilot displays
+  // Initialize all autopilot displays
   autopilot.updateDisplay();
+  borderlessAutopilot.updateDisplay();
   lawnmowerAutopilot.updateDisplay();
 
   loadThemePreference();
