@@ -4,11 +4,12 @@ A modern Snake game with multiple AI autopilot modes and border wrap functionali
 
 <div align="center">
   <img src="assets/snake-game-preview.gif" alt="Snake Game Preview">
-</div>
 
 **🎮 [Play the Game Live!](https://foxeronthepath.github.io/snake-game/)**
 
 ![HTML5](https://img.shields.io/badge/HTML5-E34F26?logo=html5&logoColor=white) ![CSS3](https://img.shields.io/badge/CSS3-1572B6?logo=css3&logoColor=white) ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=black)
+
+</div>
 
 ## 🎮 Features
 
@@ -41,9 +42,9 @@ A modern Snake game with multiple AI autopilot modes and border wrap functionali
 
 The game includes a comprehensive audio system with:
 
-- **Sound Effects**: 
+- **Sound Effects**:
   - Eating food sound
-  - Death/collision sound  
+  - Death/collision sound
   - Victory/win sound
 - **Background Music**: Looping music during gameplay
 - **Volume Controls**: Separate sliders for sound effects and music
@@ -52,11 +53,12 @@ The game includes a comprehensive audio system with:
 - **Keyboard Shortcuts**: Quick S/M key toggles
 
 ### Audio Setup
+
 1. Create a `sounds/` folder in your game directory
 2. Add WAV audio files with these exact names:
    - `eat.wav` - Sound when eating food
    - `death.wav` - Sound when snake dies
-   - `win.wav` - Sound when player wins  
+   - `win.wav` - Sound when player wins
    - `background.wav` - Background music (loops automatically)
 
 The game works perfectly without audio files - they're completely optional!
@@ -66,7 +68,7 @@ The game works perfectly without audio files - they're completely optional!
 The game features 9 distinct speed levels you can cycle through:
 
 1. **Level 1**: 300ms (slowest - strategic play)
-2. **Level 2**: 200ms 
+2. **Level 2**: 200ms
 3. **Level 3**: 150ms (default starting speed) ⭐
 4. **Level 4**: 100ms
 5. **Level 5**: 50ms
@@ -82,14 +84,16 @@ The game features 9 distinct speed levels you can cycle through:
 The game features two distinct gameplay modes:
 
 ### 🚪 Classic Border Mode (Default)
+
 - Snake dies when hitting the edges of the grid
 - Traditional Snake gameplay experience
 - Requires careful navigation around boundaries
 
 ### 🌀 Wrap-Around Mode
+
 - Snake wraps around to the opposite side when hitting edges
 - Hit left edge → appear on right edge
-- Hit right edge → appear on left edge  
+- Hit right edge → appear on left edge
 - Hit top edge → appear on bottom edge
 - Hit bottom edge → appear on top edge
 - Opens up new strategic possibilities and movement patterns
@@ -101,6 +105,7 @@ The game features two distinct gameplay modes:
 The game features an intelligent triple autopilot system that automatically adapts to your border mode:
 
 ### Smart Autopilot (A) - Adaptive AI
+
 <div align="center">
   <img src="assets/smart-autopilot-borders.gif" alt="Smart Autopilot with Borders">
 </div>
@@ -112,6 +117,7 @@ The game features an intelligent triple autopilot system that automatically adap
 - Chooses shortest paths including wrap-around routes in borderless mode
 
 ### Smart Autopilot in Borderless Mode
+
 <div align="center">
   <img src="assets/smart-autopilot-borderless.gif" alt="Smart Autopilot Borderless">
 </div>
@@ -120,6 +126,7 @@ The game features an intelligent triple autopilot system that automatically adap
 - Seamlessly navigates through edges to reach food faster
 
 ### Lawnmower Autopilot (P) - Pattern-Based AI
+
 <div align="center">
   <img src="assets/lawnmower-autopilot.gif" alt="Lawnmower Autopilot Pattern">
 </div>
@@ -130,6 +137,7 @@ The game features an intelligent triple autopilot system that automatically adap
 - Works in both border modes without switching algorithms
 
 ### 🔄 Intelligent Autopilot Switching
+
 - **Border Mode Changes**: When using Smart Autopilot (A), changing border modes automatically switches to the appropriate AI algorithm
 - **Lawnmower Immunity**: Lawnmower Autopilot (P) remains active and unchanged when border modes are switched
 - **Seamless Transition**: No manual intervention required - the system handles everything automatically
