@@ -2,6 +2,8 @@
 
 A modern Snake game with multiple AI autopilot modes and border wrap functionality built with HTML5, CSS3, and JavaScript.
 
+![Snake Game Preview](assets/snake-game-preview.gif)
+
 **🎮 [Play the Game Live!](https://foxeronthepath.github.io/snake-game/)**
 
 ![HTML5](https://img.shields.io/badge/HTML5-E34F26?logo=html5&logoColor=white) ![CSS3](https://img.shields.io/badge/CSS3-1572B6?logo=css3&logoColor=white) ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=black)
@@ -97,6 +99,7 @@ The game features two distinct gameplay modes:
 The game features an intelligent triple autopilot system that automatically adapts to your border mode:
 
 ### Smart Autopilot (A) - Adaptive AI
+![Smart Autopilot with Borders](assets/smart-autopilot-borders.gif)
 - **Automatically switches** between two specialized algorithms:
   - **Normal Mode** (🚪 borders): Standard A* pathfinding with boundary avoidance
   - **Borderless Mode** (🌀 no borders): Wrap-aware A* pathfinding that utilizes edge wrapping
@@ -104,7 +107,14 @@ The game features an intelligent triple autopilot system that automatically adap
 - Evaluates available space to prevent getting trapped
 - Chooses shortest paths including wrap-around routes in borderless mode
 
+### Smart Autopilot in Borderless Mode
+![Smart Autopilot Borderless](assets/smart-autopilot-borderless.gif)
+- Demonstrates wrap-aware pathfinding that utilizes edge wrapping
+- Shows how the AI takes advantage of wrap-around routes for efficiency
+- Seamlessly navigates through edges to reach food faster
+
 ### Lawnmower Autopilot (P) - Pattern-Based AI
+![Lawnmower Autopilot Pattern](assets/lawnmower-autopilot.gif)
 - Systematic pattern-based movement for complete grid coverage
 - Uses fixed lawnmower pattern regardless of border mode
 - **Unaffected by border mode changes** - maintains pattern consistency
