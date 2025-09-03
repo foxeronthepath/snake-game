@@ -21,12 +21,14 @@ let gameInterval;
 let gameRunning = false;
 let gamePaused = false;
 let isDarkMode = false;
+let borderWrapMode = false;
 
 const gridElement = document.getElementById("grid");
 const scoreElement = document.getElementById("score");
 const startButton = document.getElementById("start-btn");
 const pauseButton = document.getElementById("pause-btn");
 const helpButton = document.getElementById("help-btn");
+const borderModeButton = document.getElementById("border-mode-btn");
 const controlHints = document.getElementById("control-hints");
 const themeToggle = document.getElementById("theme-switch-checkbox");
 
@@ -49,6 +51,26 @@ function toggleHelp() {
   } else {
     helpButton.textContent = "Hide Help";
   }
+}
+
+function toggleBorderMode() {
+  borderWrapMode = !borderWrapMode;
+  
+  // Update button appearance and text
+  if (borderWrapMode) {
+    borderModeButton.textContent = "No Borders";
+    borderModeButton.classList.add("wrap-mode");
+    borderModeButton.title = "Border Wrap Mode ON - Snake wraps around edges";
+  } else {
+    borderModeButton.textContent = "Borders";
+    borderModeButton.classList.remove("wrap-mode");
+    borderModeButton.title = "Border Wrap Mode OFF - Snake dies at edges";
+  }
+  
+  // Save preference to localStorage
+  localStorage.setItem("snakeBorderWrapMode", borderWrapMode.toString());
+  
+  console.log(`🌀 Border wrap mode ${borderWrapMode ? 'enabled' : 'disabled'}`);
 }
 
 function increaseSpeed() {
@@ -233,10 +255,14 @@ function drawFood() {
 function checkCollision() {
   const head = snake[0];
 
-  if (head.x < 0 || head.x >= GRID_SIZE || head.y < 0 || head.y >= GRID_SIZE) {
-    return true;
+  // Only check border collision if wrap mode is disabled
+  if (!borderWrapMode) {
+    if (head.x < 0 || head.x >= GRID_SIZE || head.y < 0 || head.y >= GRID_SIZE) {
+      return true;
+    }
   }
 
+  // Check self-collision
   for (let i = 1; i < snake.length; i++) {
     if (snake[i].x === head.x && snake[i].y === head.y) {
       return true;
@@ -286,6 +312,21 @@ function moveSnake() {
     case DIRECTIONS.RIGHT:
       head.x++;
       break;
+  }
+
+  // Handle border wrapping if enabled
+  if (borderWrapMode) {
+    if (head.x < 0) {
+      head.x = GRID_SIZE - 1;
+    } else if (head.x >= GRID_SIZE) {
+      head.x = 0;
+    }
+    
+    if (head.y < 0) {
+      head.y = GRID_SIZE - 1;
+    } else if (head.y >= GRID_SIZE) {
+      head.y = 0;
+    }
   }
 
   snake.unshift(head);
@@ -565,6 +606,12 @@ function handleKeyPress(event) {
         audioManager.updateUIFromSettings();
       }
       return;
+
+    case "b":
+    case "B":
+      event.preventDefault();
+      toggleBorderMode();
+      return;
   }
 
   if (gamePaused) return;
@@ -592,6 +639,7 @@ function init() {
   startButton.addEventListener("click", startGame);
   pauseButton.addEventListener("click", togglePause);
   helpButton.addEventListener("click", toggleHelp);
+  borderModeButton.addEventListener("click", toggleBorderMode);
   themeToggle.addEventListener("change", toggleTheme);
   document.addEventListener("keydown", handleKeyPress);
 
@@ -600,6 +648,7 @@ function init() {
   lawnmowerAutopilot.updateDisplay();
 
   loadThemePreference();
+  loadBorderModePreference();
 }
 
 function loadThemePreference() {
@@ -611,6 +660,20 @@ function loadThemePreference() {
   if (savedTheme === "dark") {
     themeToggle.checked = true;
     toggleTheme();
+  }
+}
+
+function loadBorderModePreference() {
+  const savedBorderMode = localStorage.getItem("snakeBorderWrapMode");
+  
+  borderWrapMode = false;
+  
+  if (savedBorderMode === "true") {
+    toggleBorderMode();
+  } else {
+    // Initialize button text for default state
+    borderModeButton.textContent = "Borders";
+    borderModeButton.title = "Border Wrap Mode OFF - Snake dies at edges";
   }
 }
 
