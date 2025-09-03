@@ -227,7 +227,8 @@ html[data-theme="dark"] .control-hints strong {
 
 #start-btn:focus,
 #pause-btn:focus,
-#help-btn:focus {
+#help-btn:focus,
+#border-mode-btn:focus {
   outline: none;
 }
 
