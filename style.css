@@ -202,7 +202,8 @@ html[data-theme="dark"] .control-hints strong {
   padding: 12px 16px;
   font-size: 1rem;
   cursor: pointer;
-  margin: 0 5px;
+  margin-left: 20px;
+  min-width: 110px;
 }
 
 #border-mode-btn {
@@ -577,6 +578,11 @@ html[data-theme="dark"] .control-hints strong {
   position: relative;
 }
 
+.controls .buttons button:not(#audio-panel-toggle,#help-btn) {
+  min-width: 125px;
+  text-align: center;
+}
+
 .audio-toggle-btn {
   background: var(--grid-bg);
   color: var(--text-color);
@@ -586,7 +592,6 @@ html[data-theme="dark"] .control-hints strong {
   font-size: 1rem;
   cursor: pointer;
   transition: all 0.3s ease;
-  margin: 0 5px;
 }
 
 .audio-panel {
