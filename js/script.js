@@ -607,8 +607,8 @@ function handleKeyPress(event) {
       toggleTheme();
       return;
 
-    case "a":
-    case "A":
+    case "i":
+    case "I":
       event.preventDefault();
       if (gameRunning) {
         // Disable lawnmower autopilot if it's active
@@ -658,8 +658,8 @@ function handleKeyPress(event) {
       increaseSpeed();
       return;
 
-    case "s":
-    case "S":
+    case "n":
+    case "N":
       event.preventDefault();
       if (window.audioManager) {
         audioManager.toggleSounds();
@@ -688,15 +688,23 @@ function handleKeyPress(event) {
 
   switch (event.key) {
     case "ArrowUp":
+    case "w":
+    case "W":
       if (direction !== DIRECTIONS.DOWN) nextDirection = DIRECTIONS.UP;
       break;
     case "ArrowDown":
+    case "s":
+    case "S":
       if (direction !== DIRECTIONS.UP) nextDirection = DIRECTIONS.DOWN;
       break;
     case "ArrowLeft":
+    case "a":
+    case "A":
       if (direction !== DIRECTIONS.RIGHT) nextDirection = DIRECTIONS.LEFT;
       break;
     case "ArrowRight":
+    case "d":
+    case "D":
       if (direction !== DIRECTIONS.LEFT) nextDirection = DIRECTIONS.RIGHT;
       break;
   }
