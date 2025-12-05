@@ -32,6 +32,48 @@ const borderModeButton = document.getElementById("border-mode-btn");
 const controlHints = document.getElementById("control-hints");
 const themeToggle = document.getElementById("theme-switch-checkbox");
 
+// Track currently held movement keys (newest at the end for priority)
+const heldMovementKeys = [];
+const KEY_TO_DIR = {
+  ArrowUp: DIRECTIONS.UP,
+  w: DIRECTIONS.UP,
+  W: DIRECTIONS.UP,
+  ArrowDown: DIRECTIONS.DOWN,
+  s: DIRECTIONS.DOWN,
+  S: DIRECTIONS.DOWN,
+  ArrowLeft: DIRECTIONS.LEFT,
+  a: DIRECTIONS.LEFT,
+  A: DIRECTIONS.LEFT,
+  ArrowRight: DIRECTIONS.RIGHT,
+  d: DIRECTIONS.RIGHT,
+  D: DIRECTIONS.RIGHT,
+};
+
+function pushHeldKey(key) {
+  const idx = heldMovementKeys.indexOf(key);
+  if (idx !== -1) heldMovementKeys.splice(idx, 1);
+  heldMovementKeys.push(key);
+}
+
+function removeHeldKey(key) {
+  const idx = heldMovementKeys.indexOf(key);
+  if (idx !== -1) heldMovementKeys.splice(idx, 1);
+}
+
+function updateDirectionFromHeld() {
+  // Pick the most recent held key that is not an illegal reverse
+  for (let i = heldMovementKeys.length - 1; i >= 0; i--) {
+    const dir = KEY_TO_DIR[heldMovementKeys[i]];
+    if (!dir) continue;
+    if (dir === DIRECTIONS.UP && direction === DIRECTIONS.DOWN) continue;
+    if (dir === DIRECTIONS.DOWN && direction === DIRECTIONS.UP) continue;
+    if (dir === DIRECTIONS.LEFT && direction === DIRECTIONS.RIGHT) continue;
+    if (dir === DIRECTIONS.RIGHT && direction === DIRECTIONS.LEFT) continue;
+    nextDirection = dir;
+    break;
+  }
+}
+
 function toggleTheme() {
   isDarkMode = !isDarkMode;
 
@@ -686,28 +728,17 @@ function handleKeyPress(event) {
   if (gamePaused) return;
   if (!gameRunning) return;
 
-  switch (event.key) {
-    case "ArrowUp":
-    case "w":
-    case "W":
-      if (direction !== DIRECTIONS.DOWN) nextDirection = DIRECTIONS.UP;
-      break;
-    case "ArrowDown":
-    case "s":
-    case "S":
-      if (direction !== DIRECTIONS.UP) nextDirection = DIRECTIONS.DOWN;
-      break;
-    case "ArrowLeft":
-    case "a":
-    case "A":
-      if (direction !== DIRECTIONS.RIGHT) nextDirection = DIRECTIONS.LEFT;
-      break;
-    case "ArrowRight":
-    case "d":
-    case "D":
-      if (direction !== DIRECTIONS.LEFT) nextDirection = DIRECTIONS.RIGHT;
-      break;
+  if (KEY_TO_DIR[event.key]) {
+    event.preventDefault();
+    pushHeldKey(event.key);
+    updateDirectionFromHeld();
   }
+}
+
+function handleKeyUp(event) {
+  if (!KEY_TO_DIR[event.key]) return;
+  removeHeldKey(event.key);
+  updateDirectionFromHeld();
 }
 
 function init() {
@@ -719,6 +750,7 @@ function init() {
   borderModeButton.addEventListener("click", toggleBorderMode);
   themeToggle.addEventListener("change", toggleTheme);
   document.addEventListener("keydown", handleKeyPress);
+  document.addEventListener("keyup", handleKeyUp);
 
   autopilot.updateDisplay();
   borderlessAutopilot.updateDisplay();
