@@ -49,6 +49,8 @@ body {
   align-items: center;
   width: 100%;
   max-width: 650px;
+  position: relative;
+  z-index: 10;
 }
 
 .header {
@@ -800,5 +802,53 @@ html[data-theme="dark"] .control-hints strong {
 ::-webkit-scrollbar-thumb {
   background: var(--snake-color);
   border-radius: 5px;
+}
+
+/* Snow Effect */
+.snow-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.snowflake {
+  position: absolute;
+  background-color: white;
+  border-radius: 30%;
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+@keyframes fall {
+  0% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+  10% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.5;
+    transform: translateY(100vh);
+  }
+}
+
+@keyframes diagonal-fall {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0);
+  }
+  10% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.25;
+    transform: translate(10vw, 100vh);
+  }
 }
 
