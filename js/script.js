@@ -20,7 +20,6 @@ let nextDirection = DIRECTIONS.RIGHT;
 let gameInterval;
 let gameRunning = false;
 let gamePaused = false;
-let isDarkMode = false;
 let borderWrapMode = false;
 
 const gridElement = document.getElementById("grid");
@@ -30,7 +29,6 @@ const pauseButton = document.getElementById("pause-btn");
 const helpButton = document.getElementById("help-btn");
 const borderModeButton = document.getElementById("border-mode-btn");
 const controlHints = document.getElementById("control-hints");
-const themeToggle = document.getElementById("theme-switch-checkbox");
 
 // Track currently held movement keys (newest at the end for priority)
 const heldMovementKeys = [];
@@ -72,16 +70,6 @@ function updateDirectionFromHeld() {
     nextDirection = dir;
     break;
   }
-}
-
-function toggleTheme() {
-  isDarkMode = !isDarkMode;
-
-  const theme = isDarkMode ? "dark" : "light";
-  document.documentElement.setAttribute("data-theme", theme);
-  themeToggle.checked = isDarkMode;
-
-  localStorage.setItem("snakeTheme", theme);
 }
 
 function toggleHelp() {
@@ -643,12 +631,6 @@ function handleKeyPress(event) {
       restartGame();
       return;
 
-    case "t":
-    case "T":
-      event.preventDefault();
-      toggleTheme();
-      return;
-
     case "i":
     case "I":
       event.preventDefault();
@@ -748,7 +730,6 @@ function init() {
   pauseButton.addEventListener("click", togglePause);
   helpButton.addEventListener("click", toggleHelp);
   borderModeButton.addEventListener("click", toggleBorderMode);
-  themeToggle.addEventListener("change", toggleTheme);
   document.addEventListener("keydown", handleKeyPress);
   document.addEventListener("keyup", handleKeyUp);
 
@@ -756,20 +737,7 @@ function init() {
   borderlessAutopilot.updateDisplay();
   lawnmowerAutopilot.updateDisplay();
 
-  loadThemePreference();
   loadBorderModePreference();
-}
-
-function loadThemePreference() {
-  const savedTheme = localStorage.getItem("snakeTheme");
-
-  isDarkMode = false;
-  themeToggle.checked = false;
-
-  if (savedTheme === "dark") {
-    themeToggle.checked = true;
-    toggleTheme();
-  }
 }
 
 function loadBorderModePreference() {

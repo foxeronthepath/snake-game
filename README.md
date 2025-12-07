@@ -19,7 +19,6 @@ A modern Snake game with multiple AI autopilot modes and border wrap functionali
 - **Intelligent Autopilot Switching**: AI automatically adapts to border mode
 - **9 Speed Levels**: Cycle through fixed speed presets from 300ms to 1ms
 - **🎵 Audio System**: Sound effects and background music with volume controls
-- **Theme Toggle**: Dark/light mode with persistence
 - **Responsive Design**: Works on desktop and mobile
 - **Animated Elements**: Snake head with directional eyes, pulsing food
 - **Winning Condition**: Complete victory when covering the entire grid
@@ -29,11 +28,10 @@ A modern Snake game with multiple AI autopilot modes and border wrap functionali
 - **Arrow Keys**: Move the snake
 - **Spacebar**: Start/pause game
 - **R**: Restart game
-- **T**: Toggle theme
 - **B**: Toggle border mode (borders on/off)
 - **A**: Toggle Smart Autopilot (adapts to border mode)
 - **P**: Toggle Lawnmower Autopilot (systematic pattern)
-- **S**: Toggle sound effects on/off
+- **N**: Toggle sound effects on/off
 - **M**: Toggle background music on/off
 - **,** (comma): Cycle to slower speed level
 - **.** (period): Cycle to faster speed level
@@ -158,7 +156,7 @@ snake-game/
 │   ├── death.wav       # Game over sound effect
 │   ├── win.wav         # Victory sound effect
 │   └── README.md       # Audio system documentation
-├── style.css           # Styling, animations, and themes
+├── style.css           # Styling and animations
 ├── logo.png            # Game logo/icon
 └── README.md           # This file
 ```
@@ -167,7 +165,7 @@ snake-game/
 
 - **Pure JavaScript**: No frameworks, ES6+ features
 - **CSS Grid**: Responsive game board
-- **Local Storage**: Theme and border mode preference persistence
+- **Local Storage**: Border mode preference persistence
 - **Optimized Rendering**: Efficient DOM manipulation
 - **Modular Architecture**: Separate autopilot modules for maintainability
 
