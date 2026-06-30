@@ -4,13 +4,11 @@ const DEFAULT_NUM_ROUNDS = 5;
 const MAX_TICKS_PER_GAME = 80000;
 
 const SPEED_PRESETS = {
-  slow: { label: "Lenta", ticksPerFrame: 25 },
-  normal: { label: "Normale", ticksPerFrame: 75 },
-  fast: { label: "Veloce", ticksPerFrame: 150 },
-  turbo: { label: "Turbo", ticksPerFrame: 300 },
-  max: { label: "Massima", ticksPerFrame: 600 },
+  normal: { label: "Normale", msPerTick: 150 },
+  fast: { label: "Veloce", msPerTick: 10 },
+  turbo: { label: "Turbo", msPerTick: 1 },
 };
-const DEFAULT_SPEED = "fast";
+const DEFAULT_SPEED = "normal";
 
 const DIRECTIONS = {
   UP: "up",
@@ -76,6 +74,10 @@ function getSelectedSpeed() {
   return SPEED_PRESETS[key] ? { key, ...SPEED_PRESETS[key] } : { key: DEFAULT_SPEED, ...SPEED_PRESETS[DEFAULT_SPEED] };
 }
 
+function formatSpeedDescription(speed) {
+  return `${speed.msPerTick}ms`;
+}
+
 function formatSeconds(seconds) {
   if (seconds < 10) {
     return `${seconds.toFixed(1)}s`;
@@ -122,6 +124,7 @@ class SnakeSimulation {
     this.ticks = 0;
     this.startedAt = performance.now();
     this.elapsedSeconds = 0;
+    this.tickBudget = 0;
     this.status = "running";
     this.resultDetail = "";
 
@@ -330,7 +333,8 @@ const testState = {
   numRounds: DEFAULT_NUM_ROUNDS,
   speedKey: DEFAULT_SPEED,
   speedLabel: SPEED_PRESETS[DEFAULT_SPEED].label,
-  ticksPerFrame: SPEED_PRESETS[DEFAULT_SPEED].ticksPerFrame,
+  msPerTick: SPEED_PRESETS[DEFAULT_SPEED].msPerTick,
+  lastFrameTime: 0,
 };
 
 function initTestPage() {
@@ -392,7 +396,7 @@ function initTestPage() {
       const speed = getSelectedSpeed();
       testState.speedKey = speed.key;
       testState.speedLabel = speed.label;
-      testState.ticksPerFrame = speed.ticksPerFrame;
+      testState.msPerTick = speed.msPerTick;
       updateProgressUI();
     });
   }
@@ -423,7 +427,12 @@ function setControlsEnabled(enabled) {
 
 function updateProgressUI() {
   const numRounds = testState.running ? testState.numRounds : getSelectedNumRounds();
-  const speed = testState.running ? { label: testState.speedLabel, ticksPerFrame: testState.ticksPerFrame } : getSelectedSpeed();
+  const speed = testState.running
+    ? {
+        label: testState.speedLabel,
+        msPerTick: testState.msPerTick,
+      }
+    : getSelectedSpeed();
   const totalGames = NUM_GRIDS * numRounds;
   const completed = testState.allResults.length;
   document.getElementById("progress-text").textContent =
@@ -432,7 +441,7 @@ function updateProgressUI() {
   const subtitle = document.getElementById("benchmark-subtitle");
   if (subtitle) {
     subtitle.textContent =
-      `${NUM_GRIDS} griglie in parallelo · ${numRounds} round · ${totalGames} partite · ${speed.label} (${speed.ticksPerFrame} tick/frame)`;
+      `${NUM_GRIDS} griglie in parallelo · ${numRounds} round · ${totalGames} partite · ${speed.label} (${formatSpeedDescription(speed)})`;
   }
 }
 
@@ -449,7 +458,7 @@ function startBenchmark() {
   const speed = getSelectedSpeed();
   testState.speedKey = speed.key;
   testState.speedLabel = speed.label;
-  testState.ticksPerFrame = speed.ticksPerFrame;
+  testState.msPerTick = speed.msPerTick;
   testState.games.forEach((g) => g.setAutopilotMode(testState.autopilotMode));
   updateProgressUI();
   testState.running = true;
@@ -461,6 +470,7 @@ function startBenchmark() {
 
 function startRound() {
   testState.roundResults = [];
+  testState.lastFrameTime = performance.now();
   testState.games.forEach((g) => g.reset());
   updateProgressUI();
   runRoundLoop();
@@ -469,15 +479,22 @@ function startRound() {
 function runRoundLoop() {
   if (!testState.running) return;
 
+  const now = performance.now();
+  const frameDelta = testState.lastFrameTime ? now - testState.lastFrameTime : 0;
+  testState.lastFrameTime = now;
+
   let allDone = true;
 
   for (const game of testState.games) {
     if (game.status === "running") {
       allDone = false;
-      for (let i = 0; i < testState.ticksPerFrame; i++) {
+
+      game.tickBudget += frameDelta;
+      while (game.tickBudget >= testState.msPerTick && game.status === "running") {
         game.tick();
-        if (game.status !== "running") break;
+        game.tickBudget -= testState.msPerTick;
       }
+
       game.render();
     }
   }
@@ -590,7 +607,7 @@ function showReport(elapsedSeconds) {
     </table>
     <p class="report-note">
       Autopilota: <strong>${getAutopilotLabel(mode)}</strong> ·
-      Velocità: <strong>${testState.speedLabel}</strong> (${testState.ticksPerFrame} tick/frame) ·
+      Velocità: <strong>${testState.speedLabel}</strong> (${testState.msPerTick}ms) ·
       ${NUM_GRIDS} griglie × ${testState.numRounds} round = ${total} partite ·
       Griglia ${GRID_SIZE}×${GRID_SIZE} ·
       ${modeNote}
