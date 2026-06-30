@@ -24,7 +24,7 @@
           </div>
         </div>
         <p class="benchmark-subtitle" id="benchmark-subtitle">
-          10 griglie in parallelo · velocità massima (150 tick per frame)
+          10 griglie in parallelo · simulazione accelerata
         </p>
         <a class="benchmark-back-link" href="index.html">← Torna al gioco</a>
       </header>
@@ -45,6 +45,15 @@
               <option value="5" selected>5 round</option>
               <option value="10">10 round</option>
               <option value="20">20 round</option>
+            </select>
+          </div>
+          <div class="benchmark-select-wrap">
+            <select id="speed-select" class="benchmark-select" aria-label="Velocità simulazione">
+              <option value="slow">Lenta · 25 tick</option>
+              <option value="normal">Normale · 75 tick</option>
+              <option value="fast" selected>Veloce · 150 tick</option>
+              <option value="turbo">Turbo · 300 tick</option>
+              <option value="max">Massima · 600 tick</option>
             </select>
           </div>
           <button id="start-btn" type="button">Avvia benchmark</button>

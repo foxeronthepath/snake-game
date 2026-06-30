@@ -18,7 +18,7 @@ class HamiltonSolver {
       [this.directions.RIGHT]: { x: 1, y: 0 },
     };
     // Above this fill ratio, shortcuts are disabled and only the next cycle step is used
-    this.endgameFillRatio = 0.75;
+    this.endgameFillRatio = 0.85;
   }
 
   toggle() {

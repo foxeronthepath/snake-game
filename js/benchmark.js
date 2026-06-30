@@ -1,8 +1,16 @@
 const GRID_SIZE = 20;
 const NUM_GRIDS = 10;
 const DEFAULT_NUM_ROUNDS = 5;
-const TICKS_PER_FRAME = 150;
 const MAX_TICKS_PER_GAME = 80000;
+
+const SPEED_PRESETS = {
+  slow: { label: "Lenta", ticksPerFrame: 25 },
+  normal: { label: "Normale", ticksPerFrame: 75 },
+  fast: { label: "Veloce", ticksPerFrame: 150 },
+  turbo: { label: "Turbo", ticksPerFrame: 300 },
+  max: { label: "Massima", ticksPerFrame: 600 },
+};
+const DEFAULT_SPEED = "fast";
 
 const DIRECTIONS = {
   UP: "up",
@@ -62,6 +70,19 @@ function getSelectedNumRounds() {
   return Number.isFinite(rounds) && rounds > 0 ? rounds : DEFAULT_NUM_ROUNDS;
 }
 
+function getSelectedSpeed() {
+  const select = document.getElementById("speed-select");
+  const key = select?.value ?? DEFAULT_SPEED;
+  return SPEED_PRESETS[key] ? { key, ...SPEED_PRESETS[key] } : { key: DEFAULT_SPEED, ...SPEED_PRESETS[DEFAULT_SPEED] };
+}
+
+function formatSeconds(seconds) {
+  if (seconds < 10) {
+    return `${seconds.toFixed(1)}s`;
+  }
+  return `${Math.round(seconds)}s`;
+}
+
 function getAutopilotLabel(mode) {
   return AUTOPILOT_MODES[mode]?.label ?? mode;
 }
@@ -99,6 +120,8 @@ class SnakeSimulation {
     this.nextDirection = DIRECTIONS.RIGHT;
     this.score = 0;
     this.ticks = 0;
+    this.startedAt = performance.now();
+    this.elapsedSeconds = 0;
     this.status = "running";
     this.resultDetail = "";
 
@@ -155,6 +178,14 @@ class SnakeSimulation {
     return false;
   }
 
+  _getElapsedSeconds() {
+    return (performance.now() - this.startedAt) / 1000;
+  }
+
+  _finalizeElapsed() {
+    this.elapsedSeconds = this._getElapsedSeconds();
+  }
+
   tick() {
     if (this.status !== "running") {
       return this.status;
@@ -195,7 +226,8 @@ class SnakeSimulation {
 
       if (this.snake.length === GRID_SIZE * GRID_SIZE - 1) {
         this.status = "win";
-        this.resultDetail = `Win @ ${this.ticks} ticks, score ${this.score}`;
+        this._finalizeElapsed();
+        this.resultDetail = `Win @ ${formatSeconds(this.elapsedSeconds)}, score ${this.score}`;
         this._updateStatusLabel();
         return this.status;
       }
@@ -207,7 +239,8 @@ class SnakeSimulation {
 
     if (this.checkCollision(head)) {
       this.status = "lose";
-      this.resultDetail = `Lose @ ${this.ticks} ticks, len ${this.snake.length}, score ${this.score}`;
+      this._finalizeElapsed();
+      this.resultDetail = `Lose @ ${formatSeconds(this.elapsedSeconds)}, len ${this.snake.length}, score ${this.score}`;
       this._updateStatusLabel();
       return this.status;
     }
@@ -215,7 +248,8 @@ class SnakeSimulation {
     this.ticks++;
     if (this.ticks >= MAX_TICKS_PER_GAME) {
       this.status = "timeout";
-      this.resultDetail = `Timeout @ ${this.ticks} ticks, len ${this.snake.length}, score ${this.score}`;
+      this._finalizeElapsed();
+      this.resultDetail = `Timeout @ ${formatSeconds(this.elapsedSeconds)}, len ${this.snake.length}, score ${this.score}`;
       this._updateStatusLabel();
     }
 
@@ -225,11 +259,14 @@ class SnakeSimulation {
   _updateStatusLabel() {
     if (!this.statusElement) return;
     const modeTag = getAutopilotLabel(this.autopilotMode).split(" ")[0];
+    const seconds =
+      this.status === "running" ? this._getElapsedSeconds() : this.elapsedSeconds;
+    const timeLabel = formatSeconds(seconds);
     const labels = {
-      running: `G${this.gridId} · ${modeTag} · ${this.score}pts · len ${this.snake.length} · ${this.ticks}t`,
-      win: `G${this.gridId} · WIN · ${this.score}pts · ${this.ticks}t`,
+      running: `G${this.gridId} · ${modeTag} · ${this.score}pts · len ${this.snake.length} · ${timeLabel}`,
+      win: `G${this.gridId} · WIN · ${this.score}pts · ${timeLabel}`,
       lose: `G${this.gridId} · LOSE · ${this.score}pts · len ${this.snake.length}`,
-      timeout: `G${this.gridId} · TIMEOUT · ${this.score}pts · ${this.ticks}t`,
+      timeout: `G${this.gridId} · TIMEOUT · ${this.score}pts · ${timeLabel}`,
     };
     this.statusElement.textContent = labels[this.status] || this.status;
     this.statusElement.className = `grid-status status-${this.status}`;
@@ -276,7 +313,7 @@ class SnakeSimulation {
       status: this.status,
       score: this.score,
       length: this.snake.length,
-      ticks: this.ticks,
+      seconds: this.elapsedSeconds || this._getElapsedSeconds(),
       detail: this.resultDetail,
     };
   }
@@ -291,6 +328,9 @@ const testState = {
   startTime: 0,
   autopilotMode: "hamilton",
   numRounds: DEFAULT_NUM_ROUNDS,
+  speedKey: DEFAULT_SPEED,
+  speedLabel: SPEED_PRESETS[DEFAULT_SPEED].label,
+  ticksPerFrame: SPEED_PRESETS[DEFAULT_SPEED].ticksPerFrame,
 };
 
 function initTestPage() {
@@ -344,6 +384,19 @@ function initTestPage() {
     });
   }
 
+  const speedSelect = document.getElementById("speed-select");
+  if (speedSelect) {
+    speedSelect.value = testState.speedKey;
+    speedSelect.addEventListener("change", () => {
+      if (testState.running) return;
+      const speed = getSelectedSpeed();
+      testState.speedKey = speed.key;
+      testState.speedLabel = speed.label;
+      testState.ticksPerFrame = speed.ticksPerFrame;
+      updateProgressUI();
+    });
+  }
+
   document.getElementById("start-btn").addEventListener("click", startBenchmark);
   document.getElementById("reset-btn").addEventListener("click", resetBenchmark);
   updateProgressUI();
@@ -365,10 +418,12 @@ function setControlsEnabled(enabled) {
   document.getElementById("start-btn").disabled = !enabled;
   document.getElementById("autopilot-select")?.toggleAttribute("disabled", !enabled);
   document.getElementById("rounds-select")?.toggleAttribute("disabled", !enabled);
+  document.getElementById("speed-select")?.toggleAttribute("disabled", !enabled);
 }
 
 function updateProgressUI() {
   const numRounds = testState.running ? testState.numRounds : getSelectedNumRounds();
+  const speed = testState.running ? { label: testState.speedLabel, ticksPerFrame: testState.ticksPerFrame } : getSelectedSpeed();
   const totalGames = NUM_GRIDS * numRounds;
   const completed = testState.allResults.length;
   document.getElementById("progress-text").textContent =
@@ -377,7 +432,7 @@ function updateProgressUI() {
   const subtitle = document.getElementById("benchmark-subtitle");
   if (subtitle) {
     subtitle.textContent =
-      `${NUM_GRIDS} griglie in parallelo · ${numRounds} round · ${totalGames} partite · velocità massima (150 tick per frame)`;
+      `${NUM_GRIDS} griglie in parallelo · ${numRounds} round · ${totalGames} partite · ${speed.label} (${speed.ticksPerFrame} tick/frame)`;
   }
 }
 
@@ -391,6 +446,10 @@ function startBenchmark() {
   resetBenchmark();
   testState.autopilotMode = getSelectedAutopilotMode();
   testState.numRounds = getSelectedNumRounds();
+  const speed = getSelectedSpeed();
+  testState.speedKey = speed.key;
+  testState.speedLabel = speed.label;
+  testState.ticksPerFrame = speed.ticksPerFrame;
   testState.games.forEach((g) => g.setAutopilotMode(testState.autopilotMode));
   updateProgressUI();
   testState.running = true;
@@ -415,7 +474,7 @@ function runRoundLoop() {
   for (const game of testState.games) {
     if (game.status === "running") {
       allDone = false;
-      for (let i = 0; i < TICKS_PER_FRAME; i++) {
+      for (let i = 0; i < testState.ticksPerFrame; i++) {
         game.tick();
         if (game.status !== "running") break;
       }
@@ -458,8 +517,8 @@ function showReport(elapsedSeconds) {
   const total = results.length;
 
   const winRate = total ? ((wins.length / total) * 100).toFixed(1) : "0.0";
-  const avgWinTicks = wins.length
-    ? Math.round(wins.reduce((s, r) => s + r.ticks, 0) / wins.length)
+  const avgWinSeconds = wins.length
+    ? wins.reduce((s, r) => s + r.seconds, 0) / wins.length
     : 0;
   const avgLossScore = losses.length
     ? Math.round(losses.reduce((s, r) => s + r.score, 0) / losses.length)
@@ -475,7 +534,7 @@ function showReport(elapsedSeconds) {
       <div class="stat-card timeout"><span class="stat-value">${timeouts.length}</span><span class="stat-label">Timeout</span></div>
       <div class="stat-card rate"><span class="stat-value">${winRate}%</span><span class="stat-label">Win rate</span></div>
       <div class="stat-card"><span class="stat-value">${elapsedSeconds}s</span><span class="stat-label">Tempo totale</span></div>
-      <div class="stat-card"><span class="stat-value">${avgWinTicks}</span><span class="stat-label">Tick medi (win)</span></div>
+      <div class="stat-card"><span class="stat-value">${formatSeconds(avgWinSeconds)}</span><span class="stat-label">Secondi medi (win)</span></div>
       <div class="stat-card"><span class="stat-value">${avgLossScore}</span><span class="stat-label">Score medio (loss)</span></div>
       <div class="stat-card"><span class="stat-value">${avgLossLength}</span><span class="stat-label">Lunghezza media (loss)</span></div>
     </div>
@@ -503,7 +562,7 @@ function showReport(elapsedSeconds) {
       <td class="status-${r.status}">${r.status.toUpperCase()}</td>
       <td>${r.score}</td>
       <td>${r.length}</td>
-      <td>${r.ticks}</td>
+      <td>${formatSeconds(r.seconds)}</td>
     </tr>`
     )
     .join("");
@@ -526,14 +585,14 @@ function showReport(elapsedSeconds) {
     </table>
     <h3>Dettaglio tutte le ${total} partite</h3>
     <table class="report-table detail-table">
-      <thead><tr><th>Partita</th><th>Esito</th><th>Score</th><th>Lunghezza</th><th>Tick</th></tr></thead>
+      <thead><tr><th>Partita</th><th>Esito</th><th>Score</th><th>Lunghezza</th><th>Secondi</th></tr></thead>
       <tbody>${detailRows}</tbody>
     </table>
     <p class="report-note">
       Autopilota: <strong>${getAutopilotLabel(mode)}</strong> ·
+      Velocità: <strong>${testState.speedLabel}</strong> (${testState.ticksPerFrame} tick/frame) ·
       ${NUM_GRIDS} griglie × ${testState.numRounds} round = ${total} partite ·
       Griglia ${GRID_SIZE}×${GRID_SIZE} ·
-      ${TICKS_PER_FRAME} tick/frame ·
       ${modeNote}
     </p>
   `;
