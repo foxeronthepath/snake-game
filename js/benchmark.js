@@ -10,6 +10,7 @@ const SPEED_PRESETS = {
   extreme: { label: "Extreme", msPerTick: 1, maxTicksPerFrame: 1000 },
 };
 const DEFAULT_SPEED = "normal";
+const BENCHMARK_PREFS_KEY = "snakeBenchmarkPrefs";
 
 const DIRECTIONS = {
   UP: "up",
@@ -91,6 +92,54 @@ function formatSeconds(seconds) {
 
 function getAutopilotLabel(mode) {
   return AUTOPILOT_MODES[mode]?.label ?? mode;
+}
+
+function loadBenchmarkPrefs() {
+  try {
+    const raw = localStorage.getItem(BENCHMARK_PREFS_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
+function saveBenchmarkPrefs() {
+  try {
+    localStorage.setItem(
+      BENCHMARK_PREFS_KEY,
+      JSON.stringify({
+        autopilot: getSelectedAutopilotMode(),
+        rounds: getSelectedNumRounds(),
+        speed: getSelectedSpeed().key,
+      })
+    );
+  } catch {
+    // ignore (private mode, quota exceeded, etc.)
+  }
+}
+
+function restoreBenchmarkPrefs() {
+  const prefs = loadBenchmarkPrefs();
+  if (!prefs) return;
+
+  const autopilotSelect = document.getElementById("autopilot-select");
+  if (autopilotSelect && AUTOPILOT_MODES[prefs.autopilot]) {
+    autopilotSelect.value = prefs.autopilot;
+  }
+
+  const roundsSelect = document.getElementById("rounds-select");
+  if (roundsSelect && prefs.rounds) {
+    const roundsValue = String(prefs.rounds);
+    if ([...roundsSelect.options].some((o) => o.value === roundsValue)) {
+      roundsSelect.value = roundsValue;
+    }
+  }
+
+  const speedSelect = document.getElementById("speed-select");
+  if (speedSelect && SPEED_PRESETS[prefs.speed]) {
+    speedSelect.value = prefs.speed;
+  }
 }
 
 class SnakeSimulation {
@@ -357,7 +406,10 @@ function initTestPage() {
   }
   gridsContainer.innerHTML = "";
 
+  restoreBenchmarkPrefs();
   testState.autopilotMode = getSelectedAutopilotMode();
+  testState.numRounds = getSelectedNumRounds();
+  applySpeedToTestState(getSelectedSpeed());
 
   testState.games = [];
   for (let i = 0; i < NUM_GRIDS; i++) {
@@ -383,11 +435,11 @@ function initTestPage() {
 
   const autopilotSelect = document.getElementById("autopilot-select");
   if (autopilotSelect) {
-    autopilotSelect.value = testState.autopilotMode;
     autopilotSelect.addEventListener("change", () => {
       if (testState.running) return;
       testState.autopilotMode = getSelectedAutopilotMode();
       testState.games.forEach((g) => g.setAutopilotMode(testState.autopilotMode));
+      saveBenchmarkPrefs();
     });
   }
 
@@ -397,16 +449,17 @@ function initTestPage() {
       if (testState.running) return;
       testState.numRounds = getSelectedNumRounds();
       updateProgressUI();
+      saveBenchmarkPrefs();
     });
   }
 
   const speedSelect = document.getElementById("speed-select");
   if (speedSelect) {
-    speedSelect.value = testState.speedKey;
     speedSelect.addEventListener("change", () => {
       if (testState.running) return;
       applySpeedToTestState(getSelectedSpeed());
       updateProgressUI();
+      saveBenchmarkPrefs();
     });
   }
 
