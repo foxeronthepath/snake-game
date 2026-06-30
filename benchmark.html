@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Benchmark — 50 partite automatiche con Hamilton Solver"
+      content="Benchmark — 50 partite automatiche per testare gli autopilot"
     />
     <title>Benchmark — Snake Game</title>
     <link rel="icon" href="./assets/favicon.png" type="image/png" />
@@ -23,15 +23,30 @@
             <span id="progress-text">Round 0/5 · Games 0/50</span>
           </div>
         </div>
-        <p class="benchmark-subtitle">
-          10 griglie in parallelo · 5 round · 50 partite totali · velocità massima
-          (150 tick per frame)
+        <p class="benchmark-subtitle" id="benchmark-subtitle">
+          10 griglie in parallelo · velocità massima (150 tick per frame)
         </p>
         <a class="benchmark-back-link" href="index.html">← Torna al gioco</a>
       </header>
 
       <section class="controls benchmark-toolbar">
         <div class="buttons">
+          <div class="benchmark-select-wrap">
+            <select id="autopilot-select" class="benchmark-select" aria-label="Seleziona autopilota">
+              <option value="hamilton">Hamilton Solver</option>
+              <option value="smart">Smart Autopilot</option>
+              <option value="lawnmower">Lawnmower</option>
+            </select>
+          </div>
+          <div class="benchmark-select-wrap">
+            <select id="rounds-select" class="benchmark-select" aria-label="Numero di round">
+              <option value="1">1 round</option>
+              <option value="3">3 round</option>
+              <option value="5" selected>5 round</option>
+              <option value="10">10 round</option>
+              <option value="20">20 round</option>
+            </select>
+          </div>
           <button id="start-btn" type="button">Avvia benchmark</button>
           <button id="reset-btn" type="button">Reset</button>
         </div>
@@ -70,6 +85,7 @@
     </div>
 
     <script src="./js/snow.js"></script>
+    <script src="./js/autopilot.js"></script>
     <script src="./js/hamilton-solver.js"></script>
     <script src="./js/benchmark.js"></script>
   </body>

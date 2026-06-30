@@ -1,6 +1,6 @@
 const GRID_SIZE = 20;
 const NUM_GRIDS = 10;
-const NUM_ROUNDS = 5;
+const DEFAULT_NUM_ROUNDS = 5;
 const TICKS_PER_FRAME = 150;
 const MAX_TICKS_PER_GAME = 80000;
 
@@ -13,14 +13,82 @@ const DIRECTIONS = {
 
 const INITIAL_POSITION = { x: 10, y: 10 };
 
+const AUTOPILOT_MODES = {
+  hamilton: {
+    label: "Hamilton Solver",
+    create: () => new HamiltonSolver(),
+    prepare(autopilot) {
+      autopilot.active = true;
+      autopilot.cycle = [];
+      autopilot.indexGrid = [];
+      autopilot.gridSize = 0;
+    },
+    reportNote(autopilot) {
+      return `endgameFillRatio = ${autopilot.endgameFillRatio}`;
+    },
+  },
+  smart: {
+    label: "Smart Autopilot",
+    create: () => new SmartSnakeAutopilot(),
+    prepare(autopilot) {
+      autopilot.active = true;
+    },
+    reportNote() {
+      return "A* pathfinding · bordered mode";
+    },
+  },
+  lawnmower: {
+    label: "Lawnmower",
+    create: () => new LawnmowerAutopilot(),
+    prepare(autopilot) {
+      autopilot.active = true;
+      autopilot.resetPattern();
+    },
+    reportNote() {
+      return "fixed lawnmower pattern";
+    },
+  },
+};
+
+function getSelectedAutopilotMode() {
+  const select = document.getElementById("autopilot-select");
+  const mode = select?.value ?? "hamilton";
+  return AUTOPILOT_MODES[mode] ? mode : "hamilton";
+}
+
+function getSelectedNumRounds() {
+  const select = document.getElementById("rounds-select");
+  const rounds = parseInt(select?.value ?? String(DEFAULT_NUM_ROUNDS), 10);
+  return Number.isFinite(rounds) && rounds > 0 ? rounds : DEFAULT_NUM_ROUNDS;
+}
+
+function getAutopilotLabel(mode) {
+  return AUTOPILOT_MODES[mode]?.label ?? mode;
+}
+
 class SnakeSimulation {
-  constructor(gridId, gridElement, statusElement) {
+  constructor(gridId, gridElement, statusElement, autopilotMode) {
     this.gridId = gridId;
     this.gridElement = gridElement;
     this.statusElement = statusElement;
-    this.solver = new HamiltonSolver();
+    this.autopilotMode = autopilotMode;
+    this.autopilot = this._createAutopilot(autopilotMode);
     this.cells = [];
     this._buildGridDOM();
+    this.reset();
+  }
+
+  _createAutopilot(mode) {
+    const config = AUTOPILOT_MODES[mode];
+    if (!config) {
+      throw new Error(`Unknown autopilot mode: ${mode}`);
+    }
+    return config.create();
+  }
+
+  setAutopilotMode(mode) {
+    this.autopilotMode = mode;
+    this.autopilot = this._createAutopilot(mode);
     this.reset();
   }
 
@@ -34,10 +102,7 @@ class SnakeSimulation {
     this.status = "running";
     this.resultDetail = "";
 
-    this.solver.active = true;
-    this.solver.cycle = [];
-    this.solver.indexGrid = [];
-    this.solver.gridSize = 0;
+    AUTOPILOT_MODES[this.autopilotMode].prepare(this.autopilot);
 
     this.generateFood();
     this._updateStatusLabel();
@@ -95,14 +160,14 @@ class SnakeSimulation {
       return this.status;
     }
 
-    const hamiltonDir = this.solver.getNextDirection(
+    const autopilotDir = this.autopilot.getNextDirection(
       this.snake,
       this.food,
       this.direction,
       GRID_SIZE
     );
-    if (hamiltonDir) {
-      this.nextDirection = hamiltonDir;
+    if (autopilotDir) {
+      this.nextDirection = autopilotDir;
     }
 
     this.direction = this.nextDirection;
@@ -159,8 +224,9 @@ class SnakeSimulation {
 
   _updateStatusLabel() {
     if (!this.statusElement) return;
+    const modeTag = getAutopilotLabel(this.autopilotMode).split(" ")[0];
     const labels = {
-      running: `G${this.gridId} · Running · ${this.score}pts · len ${this.snake.length} · ${this.ticks}t`,
+      running: `G${this.gridId} · ${modeTag} · ${this.score}pts · len ${this.snake.length} · ${this.ticks}t`,
       win: `G${this.gridId} · WIN · ${this.score}pts · ${this.ticks}t`,
       lose: `G${this.gridId} · LOSE · ${this.score}pts · len ${this.snake.length}`,
       timeout: `G${this.gridId} · TIMEOUT · ${this.score}pts · ${this.ticks}t`,
@@ -206,6 +272,7 @@ class SnakeSimulation {
   getResult() {
     return {
       gridId: this.gridId,
+      autopilotMode: this.autopilotMode,
       status: this.status,
       score: this.score,
       length: this.snake.length,
@@ -222,6 +289,8 @@ const testState = {
   roundResults: [],
   running: false,
   startTime: 0,
+  autopilotMode: "hamilton",
+  numRounds: DEFAULT_NUM_ROUNDS,
 };
 
 function initTestPage() {
@@ -231,6 +300,8 @@ function initTestPage() {
     return;
   }
   gridsContainer.innerHTML = "";
+
+  testState.autopilotMode = getSelectedAutopilotMode();
 
   testState.games = [];
   for (let i = 0; i < NUM_GRIDS; i++) {
@@ -249,7 +320,28 @@ function initTestPage() {
     wrapper.appendChild(gridEl);
     gridsContainer.appendChild(wrapper);
 
-    testState.games.push(new SnakeSimulation(i + 1, gridEl, statusEl));
+    testState.games.push(
+      new SnakeSimulation(i + 1, gridEl, statusEl, testState.autopilotMode)
+    );
+  }
+
+  const autopilotSelect = document.getElementById("autopilot-select");
+  if (autopilotSelect) {
+    autopilotSelect.value = testState.autopilotMode;
+    autopilotSelect.addEventListener("change", () => {
+      if (testState.running) return;
+      testState.autopilotMode = getSelectedAutopilotMode();
+      testState.games.forEach((g) => g.setAutopilotMode(testState.autopilotMode));
+    });
+  }
+
+  const roundsSelect = document.getElementById("rounds-select");
+  if (roundsSelect) {
+    roundsSelect.addEventListener("change", () => {
+      if (testState.running) return;
+      testState.numRounds = getSelectedNumRounds();
+      updateProgressUI();
+    });
   }
 
   document.getElementById("start-btn").addEventListener("click", startBenchmark);
@@ -271,13 +363,22 @@ function resetBenchmark() {
 
 function setControlsEnabled(enabled) {
   document.getElementById("start-btn").disabled = !enabled;
+  document.getElementById("autopilot-select")?.toggleAttribute("disabled", !enabled);
+  document.getElementById("rounds-select")?.toggleAttribute("disabled", !enabled);
 }
 
 function updateProgressUI() {
-  const totalGames = NUM_GRIDS * NUM_ROUNDS;
+  const numRounds = testState.running ? testState.numRounds : getSelectedNumRounds();
+  const totalGames = NUM_GRIDS * numRounds;
   const completed = testState.allResults.length;
   document.getElementById("progress-text").textContent =
-    `Round ${testState.currentRound}/${NUM_ROUNDS} · Games ${completed}/${totalGames}`;
+    `Round ${testState.currentRound}/${numRounds} · Games ${completed}/${totalGames}`;
+
+  const subtitle = document.getElementById("benchmark-subtitle");
+  if (subtitle) {
+    subtitle.textContent =
+      `${NUM_GRIDS} griglie in parallelo · ${numRounds} round · ${totalGames} partite · velocità massima (150 tick per frame)`;
+  }
 }
 
 function startBenchmark() {
@@ -288,6 +389,10 @@ function startBenchmark() {
   }
 
   resetBenchmark();
+  testState.autopilotMode = getSelectedAutopilotMode();
+  testState.numRounds = getSelectedNumRounds();
+  testState.games.forEach((g) => g.setAutopilotMode(testState.autopilotMode));
+  updateProgressUI();
   testState.running = true;
   testState.startTime = performance.now();
   setControlsEnabled(false);
@@ -331,7 +436,7 @@ function runRoundLoop() {
 
   updateProgressUI();
 
-  if (testState.currentRound < NUM_ROUNDS) {
+  if (testState.currentRound < testState.numRounds) {
     testState.currentRound++;
     requestAnimationFrame(() => {
       setTimeout(startRound, 300);
@@ -377,7 +482,7 @@ function showReport(elapsedSeconds) {
   `;
 
   let roundRows = "";
-  for (let round = 1; round <= NUM_ROUNDS; round++) {
+  for (let round = 1; round <= testState.numRounds; round++) {
     const roundData = results.filter((r) => r.round === round);
     const rWins = roundData.filter((r) => r.status === "win").length;
     const rLosses = roundData.filter((r) => r.status === "lose").length;
@@ -404,6 +509,14 @@ function showReport(elapsedSeconds) {
     .join("");
 
   const body = document.getElementById("report-body");
+  const mode = testState.autopilotMode;
+  const modeConfig = AUTOPILOT_MODES[mode];
+  const sampleAutopilot = testState.games[0]?.autopilot;
+  const modeNote =
+    modeConfig && sampleAutopilot
+      ? modeConfig.reportNote(sampleAutopilot)
+      : "";
+
   body.innerHTML = `
     ${summaryHtml}
     <h3>Per round (${NUM_GRIDS} partite parallele)</h3>
@@ -417,10 +530,11 @@ function showReport(elapsedSeconds) {
       <tbody>${detailRows}</tbody>
     </table>
     <p class="report-note">
-      Config: ${NUM_GRIDS} griglie × ${NUM_ROUNDS} round = ${total} partite ·
+      Autopilota: <strong>${getAutopilotLabel(mode)}</strong> ·
+      ${NUM_GRIDS} griglie × ${testState.numRounds} round = ${total} partite ·
       Griglia ${GRID_SIZE}×${GRID_SIZE} ·
       ${TICKS_PER_FRAME} tick/frame ·
-      endgameFillRatio = ${testState.games[0]?.solver.endgameFillRatio ?? 0.75}
+      ${modeNote}
     </p>
   `;
 

@@ -36,6 +36,57 @@
   gap: 10px;
 }
 
+.benchmark-select-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.benchmark-select-wrap::after {
+  content: "";
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid var(--text-color);
+  opacity: 0.75;
+}
+
+.benchmark-select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding: 8px 36px 8px 12px;
+  font-size: 14px;
+  color: var(--text-color);
+  background: var(--grid-bg);
+  border: 2px solid var(--grid-border);
+  border-radius: 8px;
+  cursor: pointer;
+  min-width: 140px;
+}
+
+#autopilot-select {
+  min-width: 180px;
+}
+
+.benchmark-select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.benchmark-select:focus,
+.benchmark-select:focus-visible,
+.benchmark-select:active,
+.benchmark-select:hover {
+  outline: none;
+  border-color: var(--grid-border);
+  background: var(--grid-bg);
+  color: var(--text-color);
+}
+
 #reset-btn {
   background: var(--grid-bg);
   color: var(--text-color);
