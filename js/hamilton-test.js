@@ -160,10 +160,10 @@ class SnakeSimulation {
   _updateStatusLabel() {
     if (!this.statusElement) return;
     const labels = {
-      running: `G${this.gridId} · Running · ${this.score}pts`,
+      running: `G${this.gridId} · Running · ${this.score}pts · len ${this.snake.length} · ${this.ticks}t`,
       win: `G${this.gridId} · WIN · ${this.score}pts · ${this.ticks}t`,
       lose: `G${this.gridId} · LOSE · ${this.score}pts · len ${this.snake.length}`,
-      timeout: `G${this.gridId} · TIMEOUT · ${this.score}pts`,
+      timeout: `G${this.gridId} · TIMEOUT · ${this.score}pts · ${this.ticks}t`,
     };
     this.statusElement.textContent = labels[this.status] || this.status;
     this.statusElement.className = `grid-status status-${this.status}`;
@@ -199,6 +199,8 @@ class SnakeSimulation {
       foodCell.classList.add("food");
       foodCell.style.position = "relative";
     }
+
+    this._updateStatusLabel();
   }
 
   getResult() {
