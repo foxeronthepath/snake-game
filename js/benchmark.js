@@ -227,7 +227,7 @@ const testState = {
 function initTestPage() {
   const gridsContainer = document.getElementById("grids-container");
   if (!gridsContainer) {
-    console.error("hamilton-test: #grids-container not found");
+    console.error("benchmark: #grids-container not found");
     return;
   }
   gridsContainer.innerHTML = "";
@@ -283,7 +283,7 @@ function updateProgressUI() {
 function startBenchmark() {
   if (testState.running) return;
   if (!testState.games.length) {
-    console.error("hamilton-test: no games initialized");
+    console.error("benchmark: no games initialized");
     return;
   }
 
