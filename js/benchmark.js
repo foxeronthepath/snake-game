@@ -595,6 +595,25 @@ function showReport(elapsedSeconds) {
 
   body.innerHTML = `
     ${summaryHtml}
+    <h3>Grafici</h3>
+    <div class="report-charts">
+      <div class="chart-card">
+        <h4>Distribuzione esiti</h4>
+        <canvas id="chart-outcomes" class="report-chart"></canvas>
+      </div>
+      <div class="chart-card">
+        <h4>Win rate per round</h4>
+        <canvas id="chart-rounds" class="report-chart"></canvas>
+      </div>
+      <div class="chart-card chart-wide">
+        <h4>Durata partite (secondi)</h4>
+        <canvas id="chart-duration" class="report-chart"></canvas>
+      </div>
+      <div class="chart-card chart-wide">
+        <h4>Score finale per partita</h4>
+        <canvas id="chart-scores" class="report-chart"></canvas>
+      </div>
+    </div>
     <h3>Per round (${NUM_GRIDS} partite parallele)</h3>
     <table class="report-table">
       <thead><tr><th>Round</th><th>Win</th><th>Lose</th><th>Timeout</th><th>Win %</th></tr></thead>
@@ -615,6 +634,267 @@ function showReport(elapsedSeconds) {
   `;
 
   document.getElementById("report-panel").classList.remove("hidden");
+  renderReportCharts(results, testState.numRounds);
+}
+
+const CHART_COLORS = {
+  win: "#01b80a",
+  lose: "#f12d2d",
+  timeout: "#f5b041",
+  text: "#f0f0f0",
+  muted: "rgba(240,240,240,0.55)",
+  grid: "rgba(134,134,134,0.35)",
+  barBg: "rgba(255,255,255,0.06)",
+};
+
+function setupChartCanvas(canvas) {
+  const dpr = window.devicePixelRatio || 1;
+  const width = canvas.clientWidth || 300;
+  const height = canvas.clientHeight || 220;
+  canvas.width = Math.floor(width * dpr);
+  canvas.height = Math.floor(height * dpr);
+  const ctx = canvas.getContext("2d");
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  return { ctx, width, height };
+}
+
+function drawOutcomeChart(canvas, wins, losses, timeouts) {
+  const { ctx, width, height } = setupChartCanvas(canvas);
+  const total = wins + losses + timeouts;
+  const cx = width * 0.38;
+  const cy = height * 0.5;
+  const radius = Math.min(width, height) * 0.32;
+  const inner = radius * 0.55;
+
+  ctx.clearRect(0, 0, width, height);
+
+  if (total === 0) {
+    ctx.fillStyle = CHART_COLORS.muted;
+    ctx.font = "13px Arial, sans-serif";
+    ctx.fillText("Nessun dato", 16, height / 2);
+    return;
+  }
+
+  const slices = [
+    { value: wins, color: CHART_COLORS.win, label: "Win" },
+    { value: losses, color: CHART_COLORS.lose, label: "Lose" },
+    { value: timeouts, color: CHART_COLORS.timeout, label: "Timeout" },
+  ].filter((s) => s.value > 0);
+
+  let start = -Math.PI / 2;
+  for (const slice of slices) {
+    const angle = (slice.value / total) * Math.PI * 2;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, radius, start, start + angle);
+    ctx.closePath();
+    ctx.fillStyle = slice.color;
+    ctx.fill();
+    start += angle;
+  }
+
+  ctx.beginPath();
+  ctx.arc(cx, cy, inner, 0, Math.PI * 2);
+  ctx.fillStyle = "#333";
+  ctx.fill();
+
+  ctx.fillStyle = CHART_COLORS.text;
+  ctx.font = "bold 18px Arial, sans-serif";
+  ctx.textAlign = "center";
+  ctx.fillText(`${((wins / total) * 100).toFixed(0)}%`, cx, cy + 6);
+
+  let legendY = 28;
+  const legendX = width * 0.68;
+  ctx.textAlign = "left";
+  ctx.font = "12px Arial, sans-serif";
+  for (const slice of slices) {
+    ctx.fillStyle = slice.color;
+    ctx.fillRect(legendX, legendY - 10, 12, 12);
+    ctx.fillStyle = CHART_COLORS.text;
+    ctx.fillText(
+      `${slice.label}: ${slice.value} (${((slice.value / total) * 100).toFixed(0)}%)`,
+      legendX + 18,
+      legendY
+    );
+    legendY += 22;
+  }
+}
+
+function drawRoundWinRateChart(canvas, results, numRounds) {
+  const { ctx, width, height } = setupChartCanvas(canvas);
+  const pad = { top: 20, right: 16, bottom: 36, left: 36 };
+  const chartW = width - pad.left - pad.right;
+  const chartH = height - pad.top - pad.bottom;
+
+  ctx.clearRect(0, 0, width, height);
+
+  const rates = [];
+  for (let round = 1; round <= numRounds; round++) {
+    const roundData = results.filter((r) => r.round === round);
+    const rWins = roundData.filter((r) => r.status === "win").length;
+    rates.push(roundData.length ? (rWins / roundData.length) * 100 : 0);
+  }
+
+  const barGap = 8;
+  const barW = Math.max(12, (chartW - barGap * (numRounds - 1)) / numRounds);
+
+  ctx.strokeStyle = CHART_COLORS.grid;
+  ctx.fillStyle = CHART_COLORS.muted;
+  ctx.font = "11px Arial, sans-serif";
+  ctx.textAlign = "right";
+  for (let pct = 0; pct <= 100; pct += 25) {
+    const y = pad.top + chartH - (pct / 100) * chartH;
+    ctx.beginPath();
+    ctx.moveTo(pad.left, y);
+    ctx.lineTo(pad.left + chartW, y);
+    ctx.stroke();
+    ctx.fillText(`${pct}%`, pad.left - 6, y + 4);
+  }
+
+  rates.forEach((rate, i) => {
+    const x = pad.left + i * (barW + barGap);
+    const barH = (rate / 100) * chartH;
+    const y = pad.top + chartH - barH;
+
+    ctx.fillStyle = CHART_COLORS.barBg;
+    ctx.fillRect(x, pad.top, barW, chartH);
+
+    ctx.fillStyle = rate >= 50 ? CHART_COLORS.win : CHART_COLORS.lose;
+    ctx.fillRect(x, y, barW, barH);
+
+    ctx.fillStyle = CHART_COLORS.text;
+    ctx.textAlign = "center";
+    ctx.fillText(`R${i + 1}`, x + barW / 2, height - 12);
+    if (rate > 0) {
+      ctx.fillText(`${rate.toFixed(0)}%`, x + barW / 2, y - 6);
+    }
+  });
+}
+
+function drawDurationChart(canvas, results) {
+  const { ctx, width, height } = setupChartCanvas(canvas);
+  const pad = { top: 20, right: 16, bottom: 36, left: 44 };
+  const chartW = width - pad.left - pad.right;
+  const chartH = height - pad.top - pad.bottom;
+
+  ctx.clearRect(0, 0, width, height);
+
+  if (!results.length) return;
+
+  const maxSec = Math.max(...results.map((r) => r.seconds), 1);
+  const barGap = 2;
+  const barW = Math.max(3, (chartW - barGap * (results.length - 1)) / results.length);
+
+  ctx.strokeStyle = CHART_COLORS.grid;
+  ctx.fillStyle = CHART_COLORS.muted;
+  ctx.font = "11px Arial, sans-serif";
+  ctx.textAlign = "right";
+  const ySteps = 4;
+  for (let i = 0; i <= ySteps; i++) {
+    const val = (maxSec / ySteps) * i;
+    const y = pad.top + chartH - (val / maxSec) * chartH;
+    ctx.beginPath();
+    ctx.moveTo(pad.left, y);
+    ctx.lineTo(pad.left + chartW, y);
+    ctx.stroke();
+    ctx.fillText(formatSeconds(val), pad.left - 6, y + 4);
+  }
+
+  results.forEach((r, i) => {
+    const x = pad.left + i * (barW + barGap);
+    const barH = (r.seconds / maxSec) * chartH;
+    const y = pad.top + chartH - barH;
+    const color =
+      r.status === "win"
+        ? CHART_COLORS.win
+        : r.status === "lose"
+          ? CHART_COLORS.lose
+          : CHART_COLORS.timeout;
+    ctx.fillStyle = color;
+    ctx.fillRect(x, y, barW, barH);
+  });
+
+  ctx.fillStyle = CHART_COLORS.muted;
+  ctx.textAlign = "center";
+  ctx.fillText("Partita (ordine cronologico)", pad.left + chartW / 2, height - 10);
+}
+
+function drawScoreChart(canvas, results) {
+  const { ctx, width, height } = setupChartCanvas(canvas);
+  const pad = { top: 20, right: 16, bottom: 36, left: 44 };
+  const chartW = width - pad.left - pad.right;
+  const chartH = height - pad.top - pad.bottom;
+
+  ctx.clearRect(0, 0, width, height);
+
+  if (!results.length) return;
+
+  const maxScore = Math.max(...results.map((r) => r.score), 10);
+  const barGap = 2;
+  const barW = Math.max(3, (chartW - barGap * (results.length - 1)) / results.length);
+
+  ctx.strokeStyle = CHART_COLORS.grid;
+  ctx.fillStyle = CHART_COLORS.muted;
+  ctx.font = "11px Arial, sans-serif";
+  ctx.textAlign = "right";
+  const ySteps = 4;
+  for (let i = 0; i <= ySteps; i++) {
+    const val = Math.round((maxScore / ySteps) * i);
+    const y = pad.top + chartH - (val / maxScore) * chartH;
+    ctx.beginPath();
+    ctx.moveTo(pad.left, y);
+    ctx.lineTo(pad.left + chartW, y);
+    ctx.stroke();
+    ctx.fillText(String(val), pad.left - 6, y + 4);
+  }
+
+  results.forEach((r, i) => {
+    const x = pad.left + i * (barW + barGap);
+    const barH = (r.score / maxScore) * chartH;
+    const y = pad.top + chartH - barH;
+    const color =
+      r.status === "win"
+        ? CHART_COLORS.win
+        : r.status === "lose"
+          ? CHART_COLORS.lose
+          : CHART_COLORS.timeout;
+    ctx.fillStyle = color;
+    ctx.fillRect(x, y, barW, barH);
+  });
+
+  ctx.strokeStyle = "rgba(226,53,0,0.6)";
+  ctx.setLineDash([4, 4]);
+  const winLine = pad.top + chartH - (3980 / maxScore) * chartH;
+  if (3980 <= maxScore) {
+    ctx.beginPath();
+    ctx.moveTo(pad.left, winLine);
+    ctx.lineTo(pad.left + chartW, winLine);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = "#e23500";
+    ctx.textAlign = "left";
+    ctx.fillText("Vittoria (3980)", pad.left + 4, winLine - 6);
+  }
+
+  ctx.fillStyle = CHART_COLORS.muted;
+  ctx.textAlign = "center";
+  ctx.fillText("Partita (ordine cronologico)", pad.left + chartW / 2, height - 10);
+}
+
+function renderReportCharts(results, numRounds) {
+  const wins = results.filter((r) => r.status === "win").length;
+  const losses = results.filter((r) => r.status === "lose").length;
+  const timeouts = results.filter((r) => r.status === "timeout").length;
+
+  const outcomes = document.getElementById("chart-outcomes");
+  const rounds = document.getElementById("chart-rounds");
+  const duration = document.getElementById("chart-duration");
+  const scores = document.getElementById("chart-scores");
+
+  if (outcomes) drawOutcomeChart(outcomes, wins, losses, timeouts);
+  if (rounds) drawRoundWinRateChart(rounds, results, numRounds);
+  if (duration) drawDurationChart(duration, results);
+  if (scores) drawScoreChart(scores, results);
 }
 
 if (document.readyState === "loading") {
