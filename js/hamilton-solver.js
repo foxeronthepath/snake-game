@@ -17,6 +17,8 @@ class HamiltonSolver {
       [this.directions.LEFT]: { x: -1, y: 0 },
       [this.directions.RIGHT]: { x: 1, y: 0 },
     };
+    // Above this fill ratio, shortcuts are disabled and only the next cycle step is used
+    this.endgameFillRatio = 0.75;
   }
 
   toggle() {
@@ -94,6 +96,10 @@ class HamiltonSolver {
     const tailIdx = this._getIndex(tail);
     const foodIdx = this._getIndex(food);
 
+    if (this._isEndgame(snake.length, n)) {
+      return this._followCycle(head, body, headIdx, currentDirection, gridSize);
+    }
+
     if (headIdx < 0 || tailIdx < 0 || foodIdx < 0) {
       return this._followCycle(head, body, headIdx, currentDirection, gridSize);
     }
@@ -110,11 +116,18 @@ class HamiltonSolver {
     );
 
     if (candidates.length > 0) {
-      candidates.sort((a, b) => a.foodDist - b.foodDist);
+      candidates.sort((a, b) => {
+        if (a.foodDist !== b.foodDist) return a.foodDist - b.foodDist;
+        return (b.isCycleStep ? 1 : 0) - (a.isCycleStep ? 1 : 0);
+      });
       return candidates[0].direction;
     }
 
     return this._followCycle(head, body, headIdx, currentDirection, gridSize);
+  }
+
+  _isEndgame(snakeLength, gridCells) {
+    return snakeLength >= gridCells * this.endgameFillRatio;
   }
 
   _getIndex(pos) {
@@ -219,16 +232,14 @@ class HamiltonSolver {
     }
 
     const n = this.cycle.length;
-    for (let step = 1; step < n; step++) {
-      const nextPos = this.cycle[(headIdx + step) % n];
-      const dir = this._getDirectionToPosition(head, nextPos);
-      if (
-        dir &&
-        this._isPositionSafe(nextPos, body, gridSize) &&
-        this._isValidDirectionChange(currentDirection, dir)
-      ) {
-        return dir;
-      }
+    const nextPos = this.cycle[(headIdx + 1) % n];
+    const dir = this._getDirectionToPosition(head, nextPos);
+    if (
+      dir &&
+      this._isPositionSafe(nextPos, body, gridSize) &&
+      this._isValidDirectionChange(currentDirection, dir)
+    ) {
+      return dir;
     }
 
     return this._getEmergencyDirection(head, body, currentDirection, gridSize);

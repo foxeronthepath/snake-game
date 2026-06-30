@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Hamilton Solver benchmark — 50 partite automatiche"
+    />
+    <title>Hamilton Solver Benchmark — Snake Game</title>
+    <link rel="icon" href="./assets/favicon.png" type="image/png" />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="hamilton-test.css" />
+  </head>
+  <body>
+    <div class="snow-container"></div>
+
+    <main class="game-container benchmark-page">
+      <header class="header">
+        <div class="header-top">
+          <h1>Hamilton Benchmark</h1>
+          <div class="score" aria-live="polite">
+            <span id="progress-text">Round 0/5 · Games 0/50</span>
+          </div>
+        </div>
+        <p class="benchmark-subtitle">
+          10 griglie in parallelo · 5 round · 50 partite totali · velocità massima
+          (150 tick per frame)
+        </p>
+        <a class="benchmark-back-link" href="index.html">← Torna al gioco</a>
+      </header>
+
+      <section class="controls benchmark-toolbar">
+        <div class="buttons">
+          <button id="start-btn" type="button">Avvia benchmark</button>
+          <button id="reset-btn" type="button">Reset</button>
+        </div>
+      </section>
+
+      <section id="grids-container" aria-label="Griglie benchmark"></section>
+
+      <section id="report-panel" class="hidden" aria-live="polite">
+        <h2>Report finale</h2>
+        <div id="report-body"></div>
+      </section>
+    </main>
+
+    <div class="developer-credit">
+      <div class="logo-container">
+        <div class="logo-circle">
+          <img
+            src="./assets/logo.png"
+            alt="Developer Logo"
+            class="logo-image"
+            onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+          />
+          <span
+            class="logo-fallback"
+            style="display: none; color: white; font-size: 16px; font-weight: bold; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);"
+            >R</span
+          >
+        </div>
+        <span class="nickname">foxeronthepath</span>
+      </div>
+    </div>
+
+    <script src="./js/snow.js"></script>
+    <script src="./js/hamilton-solver.js"></script>
+    <script src="./js/hamilton-test.js"></script>
+  </body>
+</html>
