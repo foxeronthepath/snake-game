@@ -1,172 +1,162 @@
-# 🐍 Snake Game
+# Snake Game
 
-A modern Snake game with multiple AI autopilot modes and border wrap functionality built with HTML5, CSS3, and JavaScript.
+A modern Snake game built with HTML5, CSS3, and JavaScript. Play manually or let one of three AI autopilots take over — including a Hamiltonian cycle solver — then benchmark them across hundreds of simulated games.
 
 <div align="center">
-   <!-- <img src="assets/snake-game-preview.gif" alt="Snake Game Preview"> -->
 
-**🎮 [Play the Game Live!](https://foxeronthepath.github.io/snake-game/)**
+<img src="assets/snake-game-preview.gif" alt="Snake Game Preview" width="600">
+
+**[Play the Game Live](https://foxeronthepath.github.io/snake-game/)**
 
 ![HTML5](https://img.shields.io/badge/HTML5-E34F26?logo=html5&logoColor=white) ![CSS3](https://img.shields.io/badge/CSS3-1572B6?logo=css3&logoColor=white) ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=black)
 
 </div>
 
-## 🎮 Features
+## Features
 
-- **Classic Snake Gameplay**: Collect food, grow longer, avoid collisions
-- **Border Wrap Mode**: Toggle between classic borders and wrap-around mode
-- **Triple AI Autopilot System**: Smart AI, Borderless AI, and Lawnmower pattern AI
-- **Intelligent Autopilot Switching**: AI automatically adapts to border mode
-- **9 Speed Levels**: Cycle through fixed speed presets from 300ms to 1ms
-- **🎵 Audio System**: Sound effects and background music with volume controls
-- **Responsive Design**: Works on desktop and mobile
-- **Animated Elements**: Snake head with directional eyes, pulsing food
-- **Winning Condition**: Complete victory when covering the entire grid
+- **Classic Snake gameplay** — collect food, grow longer, avoid collisions
+- **Border wrap mode** — toggle between classic walls and wrap-around edges
+- **Three AI autopilots** — Smart (A*), Lawnmower (pattern), and Hamilton Solver (cycle-based)
+- **Adaptive Smart Autopilot** — automatically switches between bordered and wrap-aware A* when border mode changes
+- **9 speed levels** — cycle through presets from 300 ms down to 1 ms per tick
+- **Win condition** — fill the entire 20×20 grid to win
+- **Audio system** — sound effects and background music with volume sliders and persistent settings
+- **Snow effect** — optional decorative snowfall (toggle in the bottom-left corner)
+- **Benchmark suite** — run parallel simulations to compare autopilot performance ([`benchmark.html`](benchmark.html))
+- **Responsive design** — works on desktop and mobile
 
-## 🎯 Controls
+## Getting Started
 
-- **Arrow Keys**: Move the snake
-- **Spacebar**: Start/pause game
-- **R**: Restart game
-- **B**: Toggle border mode (borders on/off)
-- **A**: Toggle Smart Autopilot (adapts to border mode)
-- **P**: Toggle Lawnmower Autopilot (systematic pattern)
-- **N**: Toggle sound effects on/off
-- **M**: Toggle background music on/off
-- **,** (comma): Cycle to slower speed level
-- **.** (period): Cycle to faster speed level
+No build step required. Open `index.html` in a browser, or serve the folder with any static file server:
 
-## 🎵 Audio System
+```bash
+# Python
+python -m http.server 8000
 
-The game includes a comprehensive audio system with:
+# Node.js (npx)
+npx serve .
+```
 
-- **Sound Effects**:
-  - Eating food sound
-  - Death/collision sound
-  - Victory/win sound
-- **Background Music**: Looping music during gameplay
-- **Volume Controls**: Separate sliders for sound effects and music
-- **Toggle Controls**: Individual on/off switches for sounds and music
-- **Persistent Settings**: Audio preferences saved in browser
-- **Keyboard Shortcuts**: Quick S/M key toggles
+Then visit `http://localhost:8000`.
 
-### Audio Setup
+## Controls
 
-1. Create a `sounds/` folder in your game directory
-2. Add WAV audio files with these exact names:
-   - `eat.wav` - Sound when eating food
-   - `death.wav` - Sound when snake dies
-   - `win.wav` - Sound when player wins
-   - `background.wav` - Background music (loops automatically)
+| Key | Action |
+|-----|--------|
+| **Arrow keys** / **WASD** | Move the snake (held keys are buffered; most recent valid direction wins) |
+| **Space** | Start / pause |
+| **R** | Restart |
+| **B** | Toggle border mode (walls vs wrap-around) |
+| **I** | Toggle Smart Autopilot (adapts to border mode) |
+| **P** | Toggle Lawnmower Autopilot |
+| **H** | Toggle Hamilton Solver (bordered mode only) |
+| **,** / **.** | Slower / faster speed level |
+| **N** / **M** | Toggle sound effects / background music |
 
-The game works perfectly without audio files - they're completely optional!
+UI buttons are also available for start, pause, borders, help, and audio settings.
 
-## ⚡ Speed Levels
+## Speed Levels
 
-The game features 9 distinct speed levels you can cycle through:
+Nine fixed presets, cycled with **,** and **.**:
 
-1. **Level 1**: 300ms (slowest - strategic play)
-2. **Level 2**: 200ms
-3. **Level 3**: 150ms (default starting speed) ⭐
-4. **Level 4**: 100ms
-5. **Level 5**: 50ms
-6. **Level 6**: 25ms
-7. **Level 7**: 10ms
-8. **Level 8**: 5ms
-9. **Level 9**: 1ms (fastest - lightning speed)
+| Level | Interval | Notes |
+|-------|----------|-------|
+| 1 | 300 ms | Slowest |
+| 2 | 200 ms | |
+| 3 | 150 ms | Default (resets on new game) |
+| 4 | 100 ms | |
+| 5 | 50 ms | |
+| 6 | 25 ms | |
+| 7 | 10 ms | |
+| 8 | 5 ms | |
+| 9 | 1 ms | Fastest |
 
-**Note**: Speed resets to Level 3 (150ms) when starting a new game.
+## Border Modes
 
-## 🌀 Border Modes
+### Classic Borders (default)
 
-The game features two distinct gameplay modes:
+The snake dies when it hits the edge of the grid.
 
-### 🚪 Classic Border Mode (Default)
+### Wrap-Around
 
-- Snake dies when hitting the edges of the grid
-- Traditional Snake gameplay experience
-- Requires careful navigation around boundaries
+The snake reappears on the opposite side when crossing an edge. Hamilton Solver is disabled in this mode because it relies on a fixed Hamiltonian cycle over the bordered grid.
 
-### 🌀 Wrap-Around Mode
+Toggle with **B** or the Borders button. The preference is saved in `localStorage`.
 
-- Snake wraps around to the opposite side when hitting edges
-- Hit left edge → appear on right edge
-- Hit right edge → appear on left edge
-- Hit top edge → appear on bottom edge
-- Hit bottom edge → appear on top edge
-- Opens up new strategic possibilities and movement patterns
+## AI Autopilots
 
-**Toggle between modes**: Press **B** key or click the border button during gameplay.
+Only one autopilot can be active at a time. Press the corresponding key during a running game to toggle it on or off.
 
-## 🤖 AI Autopilot Modes
+### Smart Autopilot (**I**)
 
-The game features an intelligent triple autopilot system that automatically adapts to your border mode:
+Uses A* pathfinding with collision avoidance and fallback strategies.
 
-### Smart Autopilot (A) - Adaptive AI
+- **Bordered mode** — standard A* that avoids walls
+- **Wrap-around mode** — wrap-aware A* that can route through edges
 
-<div align="center">
-  <img src="assets/smart-autopilot-borders.gif" alt="Smart Autopilot with Borders">
-</div>
-- **Automatically switches** between two specialized algorithms:
-  - **Normal Mode** (🚪 borders): Standard A* pathfinding with boundary avoidance
-  - **Borderless Mode** (🌀 no borders): Wrap-aware A* pathfinding that utilizes edge wrapping
-- Advanced collision avoidance with multiple fallback strategies
-- Evaluates available space to prevent getting trapped
-- Chooses shortest paths including wrap-around routes in borderless mode
+When border mode changes while Smart Autopilot is on, the correct algorithm is swapped automatically.
 
-### Smart Autopilot in Borderless Mode
+### Lawnmower Autopilot (**P**)
 
-<div align="center">
-  <img src="assets/smart-autopilot-borderless.gif" alt="Smart Autopilot Borderless">
-</div>
-- Demonstrates wrap-aware pathfinding that utilizes edge wrapping
-- Shows how the AI takes advantage of wrap-around routes for efficiency
-- Seamlessly navigates through edges to reach food faster
+Follows a fixed systematic pattern for broad grid coverage. Unaffected by border mode changes.
 
-### Lawnmower Autopilot (P) - Pattern-Based AI
+### Hamilton Solver (**H**)
 
-<div align="center">
-  <img src="assets/lawnmower-autopilot.gif" alt="Lawnmower Autopilot Pattern">
-</div>
-- Systematic pattern-based movement for complete grid coverage
-- Uses fixed lawnmower pattern regardless of border mode
-- **Unaffected by border mode changes** - maintains pattern consistency
-- Designed for maximum coverage and efficiency
-- Works in both border modes without switching algorithms
+Follows a precomputed Hamiltonian cycle over the grid and takes safe shortcuts toward food when possible. In the endgame (≥ 98% grid fill), shortcuts are disabled and only cycle steps are used. Available in bordered mode only.
 
-### 🔄 Intelligent Autopilot Switching
+## Benchmark
 
-- **Border Mode Changes**: When using Smart Autopilot (A), changing border modes automatically switches to the appropriate AI algorithm
-- **Lawnmower Immunity**: Lawnmower Autopilot (P) remains active and unchanged when border modes are switched
-- **Seamless Transition**: No manual intervention required - the system handles everything automatically
+Open [`benchmark.html`](benchmark.html) (or click **Benchmark** on the main game page) to stress-test autopilots.
 
-## 🏗️ Project Structure
+- **10 parallel grids** per round
+- **Configurable rounds** — 1, 3, 5 (default), 10, or 20
+- **Autopilot selection** — Hamilton Solver, Smart Autopilot, or Lawnmower
+- **Simulation speed** — Normal (150 ms), Fast (10 ms), Turbo (1 ms), or Extreme (1 ms burst)
+- **Final report** — win rate, per-round breakdown, score/duration charts, and per-game details
+
+Benchmark settings are persisted in `localStorage`. Simulations always run in bordered mode.
+
+## Audio
+
+Place optional WAV files in the `sounds/` folder:
+
+| File | Purpose |
+|------|---------|
+| `eat.wav` | Eating food |
+| `death.wav` | Game over |
+| `win.wav` | Victory |
+| `background.wav` | Looping background music |
+
+The game works without audio files. Volume and on/off preferences are saved in the browser. See [`sounds/README.md`](sounds/README.md) for format notes.
+
+## Project Structure
 
 ```
 snake-game/
-├── index.html          # Main HTML file with embedded game UI
+├── index.html              # Main game
+├── benchmark.html          # Autopilot benchmark page
+├── benchmark.css           # Benchmark-specific styles
+├── style.css               # Game styles and animations
+├── assets/
+│   ├── favicon.png
+│   ├── logo.png
+│   └── snake-game-preview.gif
 ├── js/
-│   ├── script.js       # Core game logic, controls, and border modes
-│   ├── autopilot.js    # Smart AI and Lawnmower autopilot systems
-│   ├── borderless-autopilot.js  # Wrap-aware AI for borderless mode
-│   └── audio.js        # Audio system management
-├── sounds/
-│   ├── background.wav  # Background music (loops)
-│   ├── eat.wav         # Food eating sound effect
-│   ├── death.wav       # Game over sound effect
-│   ├── win.wav         # Victory sound effect
-│   └── README.md       # Audio system documentation
-├── style.css           # Styling and animations
-├── logo.png            # Game logo/icon
-└── README.md           # This file
+│   ├── script.js           # Core game logic, controls, border modes
+│   ├── autopilot.js        # Smart and Lawnmower autopilots
+│   ├── borderless-autopilot.js  # Wrap-aware A* for borderless mode
+│   ├── hamilton-solver.js  # Hamiltonian cycle solver
+│   ├── audio.js            # Audio manager
+│   ├── snow.js             # Snow particle effect
+│   └── benchmark.js        # Parallel simulation and reporting
+└── sounds/                 # Optional WAV audio files
 ```
 
-## 🛠️ Technical Details
+## Technical Notes
 
-- **Pure JavaScript**: No frameworks, ES6+ features
-- **CSS Grid**: Responsive game board
-- **Local Storage**: Border mode preference persistence
-- **Optimized Rendering**: Efficient DOM manipulation
-- **Modular Architecture**: Separate autopilot modules for maintainability
+- Pure JavaScript — no frameworks, ES6+
+- 20×20 CSS Grid board with efficient DOM updates
+- `localStorage` for border mode, audio, and benchmark preferences
+- Modular autopilot architecture — each AI in its own file
 
-**Enjoy the game! Try both border modes and all three AI modes to see which combination works best! 🐍🤖🌀**
+Enjoy the game — try every autopilot and border mode combination.
