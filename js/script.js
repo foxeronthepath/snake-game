@@ -129,6 +129,11 @@ function switchAutopilotForBorderMode() {
   if (lawnmowerAutopilot.isActive()) {
     console.log("🚜 Lawnmower autopilot remains active - border mode change ignored");
   }
+
+  if (hamiltonSolver.isActive() && borderWrapMode) {
+    hamiltonSolver.toggle();
+    console.log("🔄 Hamilton Solver disabled - not compatible with borderless mode");
+  }
 }
 
 function increaseSpeed() {
@@ -344,7 +349,17 @@ function checkCollision() {
 
 function moveSnake() {
   // Use autopilot based on border mode and what's active
-  if (borderlessAutopilot.isEnabled()) {
+  if (hamiltonSolver.isEnabled()) {
+    const hamiltonDirection = hamiltonSolver.getNextDirection(
+      snake,
+      food,
+      direction,
+      GRID_SIZE
+    );
+    if (hamiltonDirection) {
+      nextDirection = hamiltonDirection;
+    }
+  } else if (borderlessAutopilot.isEnabled()) {
     const borderlessDirection = borderlessAutopilot.getNextDirection(
       snake,
       food,
@@ -499,6 +514,7 @@ function startGame(isRestart = false) {
   autopilot.reset();
   borderlessAutopilot.reset();
   lawnmowerAutopilot.reset();
+  hamiltonSolver.reset();
 
   console.log(
     `🎮 Game started with speed level ${currentSpeedIndex + 1}/${
@@ -573,6 +589,7 @@ function endGame(isWin = false) {
   autopilot.reset();
   borderlessAutopilot.reset();
   lawnmowerAutopilot.reset();
+  hamiltonSolver.reset();
 
   showGameOverModal(score, isWin);
 }
@@ -639,6 +656,9 @@ function handleKeyPress(event) {
         if (lawnmowerAutopilot.isActive()) {
           lawnmowerAutopilot.toggle();
         }
+        if (hamiltonSolver.isActive()) {
+          hamiltonSolver.toggle();
+        }
         
         // Choose appropriate autopilot based on border mode
         if (borderWrapMode) {
@@ -668,7 +688,31 @@ function handleKeyPress(event) {
         if (borderlessAutopilot.isActive()) {
           borderlessAutopilot.toggle();
         }
+        if (hamiltonSolver.isActive()) {
+          hamiltonSolver.toggle();
+        }
         lawnmowerAutopilot.toggle();
+      }
+      return;
+
+    case "h":
+    case "H":
+      event.preventDefault();
+      if (gameRunning) {
+        if (borderWrapMode) {
+          console.log("⚠️ Hamilton Solver requires bordered mode");
+          return;
+        }
+        if (autopilot.isActive()) {
+          autopilot.toggle();
+        }
+        if (borderlessAutopilot.isActive()) {
+          borderlessAutopilot.toggle();
+        }
+        if (lawnmowerAutopilot.isActive()) {
+          lawnmowerAutopilot.toggle();
+        }
+        hamiltonSolver.toggle();
       }
       return;
 
@@ -736,6 +780,7 @@ function init() {
   autopilot.updateDisplay();
   borderlessAutopilot.updateDisplay();
   lawnmowerAutopilot.updateDisplay();
+  hamiltonSolver.updateDisplay();
 
   loadBorderModePreference();
 }
