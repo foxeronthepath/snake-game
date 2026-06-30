@@ -7,6 +7,7 @@ const SPEED_PRESETS = {
   normal: { label: "Normale", msPerTick: 150 },
   fast: { label: "Veloce", msPerTick: 10 },
   turbo: { label: "Turbo", msPerTick: 1 },
+  extreme: { label: "Extreme", msPerTick: 1, maxTicksPerFrame: 1000 },
 };
 const DEFAULT_SPEED = "normal";
 
@@ -75,6 +76,9 @@ function getSelectedSpeed() {
 }
 
 function formatSpeedDescription(speed) {
+  if (speed.maxTicksPerFrame) {
+    return `${speed.msPerTick}ms · burst`;
+  }
   return `${speed.msPerTick}ms`;
 }
 
@@ -334,8 +338,16 @@ const testState = {
   speedKey: DEFAULT_SPEED,
   speedLabel: SPEED_PRESETS[DEFAULT_SPEED].label,
   msPerTick: SPEED_PRESETS[DEFAULT_SPEED].msPerTick,
+  maxTicksPerFrame: SPEED_PRESETS[DEFAULT_SPEED].maxTicksPerFrame ?? null,
   lastFrameTime: 0,
 };
+
+function applySpeedToTestState(speed) {
+  testState.speedKey = speed.key;
+  testState.speedLabel = speed.label;
+  testState.msPerTick = speed.msPerTick;
+  testState.maxTicksPerFrame = speed.maxTicksPerFrame ?? null;
+}
 
 function initTestPage() {
   const gridsContainer = document.getElementById("grids-container");
@@ -393,10 +405,7 @@ function initTestPage() {
     speedSelect.value = testState.speedKey;
     speedSelect.addEventListener("change", () => {
       if (testState.running) return;
-      const speed = getSelectedSpeed();
-      testState.speedKey = speed.key;
-      testState.speedLabel = speed.label;
-      testState.msPerTick = speed.msPerTick;
+      applySpeedToTestState(getSelectedSpeed());
       updateProgressUI();
     });
   }
@@ -431,6 +440,7 @@ function updateProgressUI() {
     ? {
         label: testState.speedLabel,
         msPerTick: testState.msPerTick,
+        maxTicksPerFrame: testState.maxTicksPerFrame,
       }
     : getSelectedSpeed();
   const totalGames = NUM_GRIDS * numRounds;
@@ -455,10 +465,7 @@ function startBenchmark() {
   resetBenchmark();
   testState.autopilotMode = getSelectedAutopilotMode();
   testState.numRounds = getSelectedNumRounds();
-  const speed = getSelectedSpeed();
-  testState.speedKey = speed.key;
-  testState.speedLabel = speed.label;
-  testState.msPerTick = speed.msPerTick;
+  applySpeedToTestState(getSelectedSpeed());
   testState.games.forEach((g) => g.setAutopilotMode(testState.autopilotMode));
   updateProgressUI();
   testState.running = true;
@@ -489,10 +496,21 @@ function runRoundLoop() {
     if (game.status === "running") {
       allDone = false;
 
-      game.tickBudget += frameDelta;
-      while (game.tickBudget >= testState.msPerTick && game.status === "running") {
-        game.tick();
-        game.tickBudget -= testState.msPerTick;
+      if (testState.maxTicksPerFrame) {
+        let ticksThisFrame = 0;
+        while (
+          game.status === "running" &&
+          ticksThisFrame < testState.maxTicksPerFrame
+        ) {
+          game.tick();
+          ticksThisFrame++;
+        }
+      } else {
+        game.tickBudget += frameDelta;
+        while (game.tickBudget >= testState.msPerTick && game.status === "running") {
+          game.tick();
+          game.tickBudget -= testState.msPerTick;
+        }
       }
 
       game.render();
@@ -664,7 +682,7 @@ function drawOutcomeChart(canvas, wins, losses, timeouts) {
   const cx = width * 0.38;
   const cy = height * 0.5;
   const radius = Math.min(width, height) * 0.32;
-  const inner = radius * 0.55;
+  const inner = radius * 0.70;
 
   ctx.clearRect(0, 0, width, height);
 
